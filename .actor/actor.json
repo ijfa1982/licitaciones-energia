@@ -9,5 +9,10 @@
   "input": "./input_schema.json",
   "storages": {
     "dataset": "./dataset_schema.json"
+  },
+  "defaultRunOptions": {
+    "build": "latest",
+    "timeoutSecs": 1800,
+    "memoryMbytes": 512
   }
 }

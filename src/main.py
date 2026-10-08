@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import asyncio
 import gzip
+import os
+import time
 import urllib.request
 from collections import Counter
 from datetime import datetime, timedelta, timezone
@@ -20,6 +22,18 @@ USER_AGENT = "licitaciones-energia-espana/0.1 (Apify Actor; datos abiertos PLACS
 ESPERA_ENTRE_PAGINAS = 1.0  # segundos, para no cargar el servidor público
 CLAVE_ESTADO = "VISTOS"
 MADRID = ZoneInfo("Europe/Madrid")
+MARGEN_SEGUNDOS = 45  # tiempo reservado para guardar el estado y terminar ordenadamente
+
+
+def segundos_hasta_timeout() -> Optional[float]:
+    """Segundos que quedan antes de que Apify corte la ejecución (None si no hay límite conocido)."""
+    valor = os.environ.get("ACTOR_TIMEOUT_AT") or os.environ.get("APIFY_TIMEOUT_AT")
+    fin = parse_iso(valor) if valor else None
+    if fin is None:
+        return None
+    if fin.tzinfo is None:
+        fin = fin.replace(tzinfo=timezone.utc)
+    return (fin - datetime.now(timezone.utc)).total_seconds()
 
 
 def url_oficial(url: str) -> bool:
@@ -59,6 +73,7 @@ async def recorrer(
     max_resultados: int,
     ahora: datetime,
     vistos_previos: Optional[dict] = None,
+    segundos_restantes: Callable[[], Optional[float]] = lambda: None,
 ) -> tuple[int, dict]:
     """Recorre las páginas de cada feed (de más reciente a más antigua) y guarda las coincidencias.
 
@@ -68,8 +83,12 @@ async def recorrer(
     entradas_vistas: set[str] = set()
     vistos: dict = dict(vistos_previos or {})
     total = 0
+    sin_tiempo = False
+    duracion_pagina = 30.0  # estimación inicial; se ajusta con la última página leída
 
     for feed in feeds:
+        if sin_tiempo:
+            break
         url: Optional[str] = feed
         paginas = 0
         nombre_feed = feed.rsplit("/", 1)[-1]
@@ -78,9 +97,20 @@ async def recorrer(
             if not url_oficial(url):
                 log(f"URL descartada por no ser de la Plataforma oficial: {url}")
                 break
+            restantes = segundos_restantes()
+            if restantes is not None and restantes < MARGEN_SEGUNDOS + duracion_pagina:
+                log(
+                    f"Se acerca el límite de tiempo de la ejecución (quedan {restantes:.0f} s): "
+                    f"se termina con {total} resultados. Para revisar más días, aumenta el tiempo "
+                    f"máximo (Timeout) en las opciones de ejecución."
+                )
+                sin_tiempo = True
+                break
+            inicio_pagina = time.monotonic()
             datos = await fetch(url)
             registros, siguiente, _ = parse_feed(datos)
             paginas += 1
+            duracion_pagina = time.monotonic() - inicio_pagina
             fechas = [d for d in (parse_iso(r.get("actualizado")) for r in registros) if d]
 
             if paginas == 1 and registros:
@@ -186,6 +216,7 @@ async def main() -> None:
             max_resultados=int(entrada.get("maxResultados", 1000)),
             ahora=datetime.now(timezone.utc),
             vistos_previos=vistos_previos,
+            segundos_restantes=segundos_hasta_timeout,
         )
 
         if almacen is not None:

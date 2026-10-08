@@ -35,6 +35,7 @@ def ejecutar(cfg, ahora=AHORA, **kw):
             max_paginas=kw.get("max_paginas", 10), dias_atras=kw.get("dias_atras", 2),
             max_resultados=kw.get("max_resultados", 1000), ahora=ahora,
             vistos_previos=kw.get("vistos_previos"),
+            segundos_restantes=kw.get("segundos_restantes", lambda: None),
         )
     )
     return guardados, total, vistos, logs
@@ -157,6 +158,13 @@ class TestRecorrido(unittest.TestCase):
         guardados, total, _, _ = ejecutar(Config(), vistos_previos=vistos)
         self.assertEqual(total, 0)
         self.assertEqual(guardados, [])
+
+    def test_para_antes_del_timeout(self):
+        # Con 100 s restantes, la primera página se lee y antes de la segunda se para.
+        restantes = iter([100.0, 10.0, 10.0])
+        guardados, total, _, logs = ejecutar(Config(), segundos_restantes=lambda: next(restantes))
+        self.assertEqual([g["expediente"] for g in guardados], ["EXP-1", "EXP-2", "EXP-6"])
+        self.assertTrue(any("límite de tiempo" in l for l in logs))
 
     def test_url_no_oficial(self):
         self.assertFalse(actor_main.url_oficial("https://ejemplo.com/feed.atom"))

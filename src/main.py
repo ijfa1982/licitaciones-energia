@@ -65,7 +65,6 @@ async def recorrer(
     Devuelve (número de resultados guardados, mapa expediente -> fecha de actualización vista).
     """
     hoy = ahora.astimezone(MADRID).date()
-    limite = ahora - timedelta(days=dias_atras)
     entradas_vistas: set[str] = set()
     vistos: dict = dict(vistos_previos or {})
     total = 0
@@ -74,6 +73,7 @@ async def recorrer(
         url: Optional[str] = feed
         paginas = 0
         nombre_feed = feed.rsplit("/", 1)[-1]
+        limite = ahora - timedelta(days=dias_atras)
         while url and paginas < max_paginas and total < max_resultados:
             if not url_oficial(url):
                 log(f"URL descartada por no ser de la Plataforma oficial: {url}")
@@ -81,6 +81,7 @@ async def recorrer(
             datos = await fetch(url)
             registros, siguiente, _ = parse_feed(datos)
             paginas += 1
+            fechas = [d for d in (parse_iso(r.get("actualizado")) for r in registros) if d]
 
             if paginas == 1 and registros:
                 for r in registros[:3]:
@@ -90,8 +91,19 @@ async def recorrer(
                         f"fechaLimite={r.get('fechaLimite')} cpv={r.get('cpv')} "
                         f"titulo={(r.get('titulo') or '')[:80]!r}"
                     )
-
-            fechas = [d for d in (parse_iso(r.get("actualizado")) for r in registros) if d]
+                if fechas:
+                    # La Plataforma publica el feed con retraso (a veces varios días): el periodo pedido
+                    # se cuenta desde la última actualización publicada, no desde hoy.
+                    ultima = max(fechas)
+                    if ultima < ahora:
+                        limite = ultima - timedelta(days=dias_atras)
+                    retraso_horas = (ahora - ultima).total_seconds() / 3600
+                    if retraso_horas > 24:
+                        log(
+                            f"Aviso: la última actualización publicada en el feed es del "
+                            f"{ultima.isoformat(timespec='minutes')} ({retraso_horas / 24:.1f} días de retraso). "
+                            f"Se revisan los {dias_atras} días anteriores a esa fecha."
+                        )
             descartes: Counter = Counter()
             lote: list[dict] = []
             for rec in registros:

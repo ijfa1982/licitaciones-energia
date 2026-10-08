@@ -76,7 +76,7 @@
     "diasAtras": {
       "title": "Días hacia atrás",
       "type": "integer",
-      "description": "Revisa las publicaciones y cambios de los últimos N días. Para un aviso diario, 1 o 2.",
+      "description": "Revisa las publicaciones y cambios de los últimos N días, contados desde la última actualización que haya publicado la Plataforma (su feed suele ir con algún día de retraso). Para un aviso diario, 1 o 2.",
       "default": 2,
       "minimum": 1,
       "maximum": 30,

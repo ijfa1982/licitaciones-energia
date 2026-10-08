@@ -21,7 +21,7 @@ async def fetch_falso(url):
     return muestra.PAGINAS[url]
 
 
-def ejecutar(cfg, **kw):
+def ejecutar(cfg, ahora=AHORA, **kw):
     guardados = []
     logs = []
 
@@ -33,7 +33,7 @@ def ejecutar(cfg, **kw):
         actor_main.recorrer(
             [actor_main.FEED_LICITACIONES], cfg, fetch=fetch_falso, guardar=guardar, log=logs.append,
             max_paginas=kw.get("max_paginas", 10), dias_atras=kw.get("dias_atras", 2),
-            max_resultados=kw.get("max_resultados", 1000), ahora=AHORA,
+            max_resultados=kw.get("max_resultados", 1000), ahora=ahora,
             vistos_previos=kw.get("vistos_previos"),
         )
     )
@@ -113,11 +113,20 @@ class TestRecorrido(unittest.TestCase):
         self.assertTrue(any(l.startswith("Muestra:") for l in logs))
 
     def test_para_si_toda_la_pagina_es_antigua(self):
-        # Con 1 día hacia atrás el límite es el 7/10 a las 09:00 UTC y toda la página 2 es anterior:
-        # se lee, se descarta y no se baja a la 3.
+        # Con 1 día hacia atrás desde la última actualización (8/10 07:00) el límite es el 7/10 07:00;
+        # la página 2 aún tiene una entrada de las 09:00 y la 3 es toda antigua: se paran en la 3.
         _, _, _, logs = ejecutar(Config(), dias_atras=1)
         paginas = [l for l in logs if l.startswith("Página")]
-        self.assertEqual(len(paginas), 2)
+        self.assertEqual(len(paginas), 3)
+
+    def test_feed_con_retraso(self):
+        # Hoy es 13/10 pero el feed solo llega al 8/10: debe contar los días desde el 8/10.
+        ahora = datetime(2026, 10, 13, 9, 0, tzinfo=timezone.utc)
+        guardados, total, _, logs = ejecutar(Config(), ahora=ahora)
+        self.assertEqual([g["expediente"] for g in guardados], ["EXP-1", "EXP-2", "EXP-6", "EXP-7"])
+        self.assertTrue(any(l.startswith("Aviso: la última actualización") for l in logs))
+        # Los días restantes se siguen calculando desde hoy
+        self.assertEqual(guardados[0]["diasRestantes"], 17)
 
     def test_resumen_descartes(self):
         _, _, _, logs = ejecutar(Config())

@@ -1,0 +1,35 @@
+{
+  "actorSpecification": 1,
+  "views": {
+    "overview": {
+      "title": "Resumen",
+      "transformation": {
+        "fields": [
+          "titulo",
+          "sectores",
+          "organoContratacion",
+          "comunidadAutonoma",
+          "presupuestoSinIva",
+          "fechaLimite",
+          "diasRestantes",
+          "estadoTexto",
+          "urlDetalle"
+        ]
+      },
+      "display": {
+        "component": "table",
+        "properties": {
+          "titulo": { "label": "Licitación", "format": "text" },
+          "sectores": { "label": "Sector", "format": "array" },
+          "organoContratacion": { "label": "Órgano de contratación", "format": "text" },
+          "comunidadAutonoma": { "label": "Comunidad", "format": "text" },
+          "presupuestoSinIva": { "label": "Presupuesto sin IVA (€)", "format": "number" },
+          "fechaLimite": { "label": "Fecha límite", "format": "text" },
+          "diasRestantes": { "label": "Días restantes", "format": "number" },
+          "estadoTexto": { "label": "Estado", "format": "text" },
+          "urlDetalle": { "label": "Ficha oficial", "format": "link" }
+        }
+      }
+    }
+  }
+}

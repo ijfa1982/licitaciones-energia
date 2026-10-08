@@ -1,0 +1,142 @@
+{
+  "title": "Licitaciones de energía en España",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "sectores": {
+      "title": "Sectores energéticos",
+      "type": "array",
+      "description": "Qué tipos de licitación buscar. Si no eliges ninguno se buscan todos.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": [
+          "fotovoltaica_autoconsumo",
+          "eficiencia_energetica",
+          "alumbrado",
+          "climatizacion",
+          "suministro_energia",
+          "instalaciones_electricas",
+          "movilidad_electrica",
+          "almacenamiento_renovables",
+          "consultoria_energetica"
+        ],
+        "enumTitles": [
+          "Fotovoltaica y autoconsumo",
+          "Eficiencia energética",
+          "Alumbrado público e iluminación",
+          "Climatización, calefacción y bombas de calor",
+          "Suministro de electricidad y gas",
+          "Instalaciones eléctricas (BT/MT)",
+          "Movilidad eléctrica y puntos de recarga",
+          "Almacenamiento y otras renovables",
+          "Ingeniería y consultoría energética"
+        ]
+      },
+      "default": []
+    },
+    "comunidades": {
+      "title": "Comunidades autónomas",
+      "type": "array",
+      "description": "Filtra por lugar de ejecución. Vacío = toda España.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["ES11", "ES12", "ES13", "ES21", "ES22", "ES23", "ES24", "ES30", "ES41", "ES42", "ES43", "ES51", "ES52", "ES53", "ES61", "ES62", "ES63", "ES64", "ES70"],
+        "enumTitles": ["Galicia", "Asturias", "Cantabria", "País Vasco", "Navarra", "La Rioja", "Aragón", "Madrid", "Castilla y León", "Castilla-La Mancha", "Extremadura", "Cataluña", "Comunitat Valenciana", "Illes Balears", "Andalucía", "Región de Murcia", "Ceuta", "Melilla", "Canarias"]
+      },
+      "default": []
+    },
+    "estados": {
+      "title": "Estado de la licitación",
+      "type": "array",
+      "description": "Por defecto solo las que están en plazo de presentación de ofertas.",
+      "editor": "select",
+      "items": {
+        "type": "string",
+        "enum": ["PRE", "PUB", "EV", "ADJ", "RES", "ANUL"],
+        "enumTitles": ["Anuncio previo", "En plazo", "Pendiente de adjudicación", "Adjudicada", "Resuelta", "Anulada"]
+      },
+      "default": ["PUB"]
+    },
+    "presupuestoMinimo": {
+      "title": "Presupuesto mínimo (€ sin IVA)",
+      "type": "integer",
+      "description": "Descarta licitaciones por debajo de este importe.",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "presupuestoMaximo": {
+      "title": "Presupuesto máximo (€ sin IVA)",
+      "type": "integer",
+      "description": "Descarta licitaciones por encima de este importe (útil para pymes).",
+      "minimum": 0,
+      "editor": "number"
+    },
+    "diasAtras": {
+      "title": "Días hacia atrás",
+      "type": "integer",
+      "description": "Revisa las publicaciones y cambios de los últimos N días. Para un aviso diario, 1 o 2.",
+      "default": 2,
+      "minimum": 1,
+      "maximum": 30,
+      "editor": "number"
+    },
+    "excluirVencidas": {
+      "title": "Excluir las de plazo vencido",
+      "type": "boolean",
+      "description": "Quita las licitaciones cuya fecha límite ya ha pasado.",
+      "default": true
+    },
+    "soloNuevasDesdeUltimaEjecucion": {
+      "title": "Solo nuevas o modificadas desde la última ejecución",
+      "type": "boolean",
+      "description": "Ideal para una tarea programada diaria: no repite licitaciones ya entregadas salvo que cambien.",
+      "default": false
+    },
+    "incluirContratosMenores": {
+      "title": "Incluir contratos menores",
+      "type": "boolean",
+      "description": "Añade el feed de contratos menores (importes pequeños, interesante para instaladores locales).",
+      "default": false
+    },
+    "usarPalabrasClave": {
+      "title": "Detectar también por palabras del título",
+      "type": "boolean",
+      "description": "Además de los códigos CPV, busca términos como \"fotovoltaica\", \"alumbrado\" o \"punto de recarga\" en el título. Encuentra licitaciones mal clasificadas.",
+      "default": true
+    },
+    "cpvExtra": {
+      "title": "Códigos CPV adicionales",
+      "type": "array",
+      "description": "Códigos o prefijos CPV extra que quieras incluir, por ejemplo 45315000.",
+      "editor": "stringList",
+      "default": []
+    },
+    "palabrasClaveExtra": {
+      "title": "Palabras clave adicionales",
+      "type": "array",
+      "description": "Términos extra a buscar en el título.",
+      "editor": "stringList",
+      "default": []
+    },
+    "maxResultados": {
+      "title": "Máximo de resultados",
+      "type": "integer",
+      "description": "Límite de licitaciones a devolver en esta ejecución.",
+      "default": 1000,
+      "minimum": 1,
+      "editor": "number"
+    },
+    "maxPaginas": {
+      "title": "Máximo de páginas del feed",
+      "type": "integer",
+      "description": "Cada página tiene hasta 500 actualizaciones. Límite de seguridad.",
+      "default": 30,
+      "minimum": 1,
+      "maximum": 200,
+      "editor": "number",
+      "sectionCaption": "Avanzado"
+    }
+  }
+}

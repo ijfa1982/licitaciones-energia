@@ -1,0 +1,13 @@
+{
+  "actorSpecification": 1,
+  "name": "licitaciones-energia-espana",
+  "title": "Licitaciones de energía en España (PLACSP)",
+  "description": "Licitaciones públicas del sector energético en España: fotovoltaica y autoconsumo, eficiencia energética, alumbrado, climatización, puntos de recarga, instalaciones eléctricas y suministro. Datos oficiales de la Plataforma de Contratación del Sector Público, filtrados por sector, comunidad autónoma, importe y plazo.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": "../Dockerfile",
+  "input": "./input_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  }
+}

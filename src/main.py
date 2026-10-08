@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import gzip
 import urllib.request
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 from typing import Awaitable, Callable, Optional
 from urllib.parse import urlparse
@@ -12,7 +13,7 @@ from zoneinfo import ZoneInfo
 from apify import Actor
 
 from .catalogo import FEED_CONTRATOS_MENORES, FEED_LICITACIONES, HOSTS_OFICIALES
-from .filtros import Config, aceptar
+from .filtros import Config, evaluar
 from .parser import parse_feed, parse_iso
 
 USER_AGENT = "licitaciones-energia-espana/0.1 (Apify Actor; datos abiertos PLACSP)"
@@ -72,31 +73,47 @@ async def recorrer(
     for feed in feeds:
         url: Optional[str] = feed
         paginas = 0
+        nombre_feed = feed.rsplit("/", 1)[-1]
         while url and paginas < max_paginas and total < max_resultados:
             if not url_oficial(url):
                 log(f"URL descartada por no ser de la Plataforma oficial: {url}")
                 break
             datos = await fetch(url)
-            registros, siguiente, mas_antigua = parse_feed(datos)
+            registros, siguiente, _ = parse_feed(datos)
             paginas += 1
 
+            if paginas == 1 and registros:
+                for r in registros[:3]:
+                    log(
+                        "Muestra: "
+                        f"estado={r.get('estado')} actualizado={r.get('actualizado')} "
+                        f"fechaLimite={r.get('fechaLimite')} cpv={r.get('cpv')} "
+                        f"titulo={(r.get('titulo') or '')[:80]!r}"
+                    )
+
+            fechas = [d for d in (parse_iso(r.get("actualizado")) for r in registros) if d]
+            descartes: Counter = Counter()
             lote: list[dict] = []
             for rec in registros:
                 # El feed repite una licitación por cada modificación; nos quedamos con la más reciente.
                 clave = rec.get("id") or rec.get("expediente")
                 if not clave or clave in entradas_vistas:
+                    descartes["repetida"] += 1
                     continue
                 entradas_vistas.add(clave)
 
                 upd = parse_iso(rec.get("actualizado"))
                 if upd and upd < limite:
+                    descartes["fuera del periodo"] += 1
                     continue
 
-                salida = aceptar(rec, cfg, hoy)
+                salida, motivo = evaluar(rec, cfg, hoy)
                 if salida is None:
+                    descartes[motivo] += 1
                     continue
                 if vistos_previos is not None and vistos_previos.get(clave) == rec.get("actualizado"):
-                    continue  # ya entregada en una ejecución anterior sin cambios
+                    descartes["ya entregada"] += 1
+                    continue
                 vistos[clave] = rec.get("actualizado")
                 salida["fuente"] = "Plataforma de Contratación del Sector Público"
                 salida["obtenidoEn"] = ahora.isoformat(timespec="seconds")
@@ -107,11 +124,19 @@ async def recorrer(
             if lote:
                 await guardar(lote)
                 total += len(lote)
-            log(f"Página {paginas} de {feed.rsplit('/', 1)[-1]}: {len(registros)} entradas, {len(lote)} coincidencias (total {total}).")
+            rango = (
+                f"{min(fechas).isoformat(timespec='minutes')} a {max(fechas).isoformat(timespec='minutes')}"
+                if fechas else "sin fechas"
+            )
+            resumen_descartes = ", ".join(f"{k}: {v}" for k, v in descartes.most_common()) or "ninguno"
+            log(
+                f"Página {paginas} de {nombre_feed}: {len(registros)} entradas ({rango}), "
+                f"{len(lote)} coincidencias (total {total}). Descartes: {resumen_descartes}."
+            )
 
-            fecha_antigua = parse_iso(mas_antigua)
-            if fecha_antigua and fecha_antigua < limite:
-                break  # el resto de páginas es más antiguo que el periodo pedido
+            # Se para cuando TODA la página es anterior al periodo pedido (no se asume orden dentro de la página).
+            if fechas and max(fechas) < limite:
+                break
             url = siguiente
             if url:
                 await asyncio.sleep(ESPERA_ENTRE_PAGINAS)

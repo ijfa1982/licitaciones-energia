@@ -106,7 +106,25 @@ class TestRecorrido(unittest.TestCase):
 
     def test_no_baja_a_paginas_antiguas(self):
         _, _, _, logs = ejecutar(Config(), dias_atras=2)
-        self.assertEqual(len(logs), 2)  # página 3 (septiembre) no se descarga
+        paginas = [l for l in logs if l.startswith("Página")]
+        # La página 3 es entera de septiembre: se lee, se descarta y ya no se sigue.
+        self.assertEqual(len(paginas), 3)
+        self.assertIn("fuera del periodo: 1", paginas[2])
+        self.assertTrue(any(l.startswith("Muestra:") for l in logs))
+
+    def test_para_si_toda_la_pagina_es_antigua(self):
+        # Con 1 día hacia atrás el límite es el 7/10 a las 09:00 UTC y toda la página 2 es anterior:
+        # se lee, se descarta y no se baja a la 3.
+        _, _, _, logs = ejecutar(Config(), dias_atras=1)
+        paginas = [l for l in logs if l.startswith("Página")]
+        self.assertEqual(len(paginas), 2)
+
+    def test_resumen_descartes(self):
+        _, _, _, logs = ejecutar(Config())
+        primera = next(l for l in logs if l.startswith("Página 1"))
+        self.assertIn("no es de energía: 1", primera)
+        self.assertIn("estado ADJ: 1", primera)
+        self.assertIn("plazo vencido: 1", primera)
 
     def test_comunidad_y_sector(self):
         guardados, _, _, _ = ejecutar(Config(comunidades=["ES52"], sectores=["movilidad_electrica"]))

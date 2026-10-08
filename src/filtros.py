@@ -92,32 +92,37 @@ def dias_restantes(fecha_limite: Optional[str], hoy: date) -> Optional[int]:
         return None
 
 
-def aceptar(rec: dict, cfg: Config, hoy: date) -> Optional[dict]:
-    """Aplica todos los filtros. Devuelve el registro enriquecido o None si se descarta."""
+def evaluar(rec: dict, cfg: Config, hoy: date) -> tuple[Optional[dict], str]:
+    """Aplica todos los filtros. Devuelve (registro enriquecido, "ok") o (None, motivo del descarte)."""
     if cfg.estados and rec.get("estado") not in cfg.estados:
-        return None
+        return None, f"estado {rec.get('estado')}"
 
     dias = dias_restantes(rec.get("fechaLimite"), hoy)
     if cfg.excluir_vencidas and dias is not None and dias < 0:
-        return None
+        return None, "plazo vencido"
 
     if cfg.comunidades:
         nuts = rec.get("codigoNuts") or ""
         if not any(nuts.startswith(c) for c in cfg.comunidades):
-            return None
+            return None, "otra comunidad"
 
     importe = rec.get("presupuestoSinIva") or rec.get("valorEstimado")
     if cfg.presupuesto_min is not None and (importe is None or importe < cfg.presupuesto_min):
-        return None
+        return None, "presupuesto bajo"
     if cfg.presupuesto_max is not None and importe is not None and importe > cfg.presupuesto_max:
-        return None
+        return None, "presupuesto alto"
 
     sectores, motivos = clasificar(rec, cfg)
     if not sectores:
-        return None
+        return None, "no es de energía"
 
     salida = dict(rec)
     salida["sectores"] = [SECTORES[s]["nombre"] if s in SECTORES else s for s in sectores]
     salida["motivoCoincidencia"] = motivos
     salida["diasRestantes"] = dias
-    return salida
+    return salida, "ok"
+
+
+def aceptar(rec: dict, cfg: Config, hoy: date) -> Optional[dict]:
+    """Igual que evaluar(), devolviendo solo el registro o None."""
+    return evaluar(rec, cfg, hoy)[0]

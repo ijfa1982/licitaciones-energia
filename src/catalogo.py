@@ -25,7 +25,10 @@ SECTORES = {
     "alumbrado": {
         "nombre": "Alumbrado público e iluminación",
         "cpv": ["315", "349285", "453161", "502321", "50232"],
-        "palabras": ["alumbrado", "luminaria", "iluminacion", "tecnologia led", "led"],
+        "palabras": [
+            "alumbrado", "luminaria", "tecnologia led", "led", "iluminacion publica",
+            "iluminacion exterior", "iluminacion eficiente", "iluminacion vial",
+        ],
     },
     "climatizacion": {
         "nombre": "Climatización, calefacción y bombas de calor",
@@ -40,12 +43,14 @@ SECTORES = {
         "cpv": ["0931", "653", "09123"],
         "palabras": [
             "suministro electrico", "suministro de electricidad", "suministro de energia electrica",
-            "energia electrica", "suministro de gas natural",
+            "energia electrica", "gas natural",
         ],
     },
     "instalaciones_electricas": {
         "nombre": "Instalaciones eléctricas, media y baja tensión",
-        "cpv": ["4531", "311", "3168", "50532", "50711"],
+        # 45310000 general y 45311/45315/45317 eléctricas; se excluyen 45312 (alarmas y antenas),
+        # 45313 (ascensores) y 45314 (telecomunicaciones).
+        "cpv": ["45310000", "45311", "45315", "45317", "311", "3168", "50532", "50711"],
         "palabras": [
             "instalacion electrica", "instalaciones electricas", "baja tension", "media tension",
             "alta tension", "centro de transformacion", "grupo electrogeno", "cuadro electrico",
@@ -74,6 +79,13 @@ SECTORES = {
         "palabras": ["consultoria energetica", "ingenieria energetica", "plan de transicion energetica"],
     },
 }
+
+# Palabras del título que indican que no es un contrato energético aunque coincida algún código
+# (iluminación y sonido de eventos, carrozas, fiestas...).
+EXCLUSIONES_TITULO = [
+    "sonido", "carroza", "carrozas", "espectaculo", "espectacular", "festejos", "fiestas",
+    "iluminacion artistica", "escenario", "escenografia", "evento", "eventos", "musical",
+]
 
 # Estado del expediente (ContractFolderStatusCode)
 ESTADOS = {

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Optional
 
-from .catalogo import COMUNIDADES, SECTORES
+from .catalogo import COMUNIDADES, EXCLUSIONES_TITULO, SECTORES
 
 
 def normalizar(texto: str) -> str:
@@ -51,16 +51,34 @@ class Config:
         )
 
 
+def _es_cpv_energetico(codigo: str, prefijos: list[str]) -> bool:
+    return any(codigo.startswith(p) for p in prefijos)
+
+
 def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str]]:
-    """Devuelve (sectores detectados, motivos) para un registro."""
+    """Devuelve (sectores detectados, motivos) para un registro.
+
+    Un código CPV energético solo cuenta si es el CPV principal (el primero) o si al menos la mitad
+    de los CPV del contrato son energéticos. Así se descartan contratos de otra cosa que incluyen
+    una partida menor de energía (limpieza con mantenimiento de frío, ferretería con lámparas...).
+    """
     sectores: list[str] = []
     motivos: list[str] = []
     cpvs = rec.get("cpv") or []
     titulo_norm = normalizar(rec.get("titulo") or "")
 
+    if any(_contiene(titulo_norm, p) for p in EXCLUSIONES_TITULO):
+        return [], []
+
+    todos_prefijos = [p for clave in cfg.sectores for p in SECTORES[clave]["cpv"]] + cfg.cpv_extra
+    energeticos = [c for c in cpvs if _es_cpv_energetico(c, todos_prefijos)]
+    cpv_valido = bool(cpvs) and (cpvs[0] in energeticos or len(energeticos) * 2 >= len(cpvs))
+
     for clave in cfg.sectores:
         sector = SECTORES[clave]
-        cpv_hit = next((c for c in cpvs for p in sector["cpv"] if c.startswith(p)), None)
+        cpv_hit = None
+        if cpv_valido:
+            cpv_hit = next((c for c in cpvs if _es_cpv_energetico(c, sector["cpv"])), None)
         if cpv_hit:
             sectores.append(clave)
             motivos.append(f"CPV {cpv_hit}")
@@ -71,7 +89,7 @@ def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str]]:
                 sectores.append(clave)
                 motivos.append(f'título: "{palabra}"')
 
-    cpv_extra = next((c for c in cpvs for p in cfg.cpv_extra if c.startswith(p)), None)
+    cpv_extra = next((c for c in cpvs if _es_cpv_energetico(c, cfg.cpv_extra)), None) if cpv_valido else None
     if cpv_extra:
         sectores.append("cpv_personalizado")
         motivos.append(f"CPV {cpv_extra}")

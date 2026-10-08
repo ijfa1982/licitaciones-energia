@@ -163,6 +163,52 @@ class TestRecorrido(unittest.TestCase):
         self.assertTrue(actor_main.url_oficial(muestra.URL_PAG2))
 
 
+class TestCasosReales(unittest.TestCase):
+    """Casos sacados de la primera ejecución real (8/10/2026)."""
+
+    CASOS = [
+        # (titulo, cpv, debe_entrar)
+        ("Suministro de luminarias y equipos de iluminación para la obra del Acondicionamiento Paisajístico", ["31527200"], True),
+        ("Suministro e instalación de nuevos equipos de climatización para el CGMACAN", ["42512000"], True),
+        ("Instalación de alumbrado público en el camino de los ambeles, Lorca", ["45316110"], True),
+        ("Suministro e instalación de alumbrado ornamental en Paseo de Almería", ["31527260"], True),
+        ("Suministro de grupo electrógeno.", ["31121000"], True),
+        ("Gas Natural para Edificio Sede de la D.P. de la Tgss de Badajoz", ["09000000", "09123000"], True),
+        ("Contratación del suministro de gas natural para el Hospital Egarsat", ["09123000"], True),
+        ("Suministro de pellet para las calderas de biomasa de la piscina cubierta municipal", ["09111400"], True),
+        ("Sustitución de reguladores para el alumbrado aeronáutico de superficie", ["31224600"], True),
+        ("Obras de adecuación de edificio para centro social integrado", ["45000000", "45331000"], True),
+        ("Suministro de un vehículo industrial nuevo, motorización eléctrica", ["34100000", "34144900"], True),
+        # Falsos positivos de la primera versión
+        ("Contrato de servicios de limpieza del Centro Tecnológico", ["90910000", "50730000", "90911000"], False),
+        ("Suministro de materiales de ferretería y otros",
+         ["44316000", "44110000", "44500000", "39715300", "44800000", "31600000", "31500000"], False),
+        ("Suministro de equipamiento técnico especializado para actividades de investigación",
+         ["35125300", "44511000", "38300000", "31153000", "31440000", "32342100", "44512000"], False),
+        ("Obras de mantenimiento y adecuación interior de la Cafetería",
+         ["45453000", "45310000", "45454100", "45451000", "39100000"], False),
+        ("Ejecución de obras y mantenimiento del sistema de comunicaciones móviles GSM-R", ["45314000"], False),
+        ("Asistencia Técnica en Sonido, Iluminación y Carga/Descarga", ["63100000", "51313000", "71318100"], False),
+        ("Suministro en régimen de alquiler de carrozas con servicios de diseño e iluminación", ["79952000", "34220000"], False),
+        ("Servicio iluminación artística extraordinaria para los Festejos de San Martin", ["71318100"], False),
+        ("Sistemas de iluminación espectacular, sonido y escenario",
+         ["32320000", "51310000", "32340000", "31500000", "31527200", "92360000"], False),
+        ("Suministro de materiales de obra por lotes",
+         ["34991000", "44114000", "44111200", "31500000", "44111100", "14200000", "31000000"], False),
+    ]
+
+    def test_casos(self):
+        cfg = Config()
+        hoy = AHORA.date()
+        fallos = []
+        for titulo, cpv, esperado in self.CASOS:
+            rec = {"estado": "PUB", "titulo": titulo, "cpv": cpv, "fechaLimite": "2026-11-01"}
+            obtenido = aceptar(rec, cfg, hoy) is not None
+            if obtenido != esperado:
+                fallos.append(f"{'debería entrar' if esperado else 'NO debería entrar'}: {titulo}")
+        self.assertEqual(fallos, [])
+
+
 class TestMain(unittest.TestCase):
     def test_main_completo(self):
         from apify import Actor

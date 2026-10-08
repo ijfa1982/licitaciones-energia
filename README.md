@@ -74,7 +74,8 @@ Para un aviso diario: crea una **Tarea** con tu configuración, activa *"Solo nu
 | `comunidadAutonoma`, `codigoNuts`, `lugarEjecucion`, `municipio` | Dónde se ejecuta |
 | `fechaLimite`, `horaLimite`, `diasRestantes` | Plazo de presentación de ofertas |
 | `documentos` | Enlaces a pliegos y documentos |
-| `adjudicatario`, `importeAdjudicacion` | Cuando ya está adjudicada |
+| `adjudicatario`, `adjudicatarioNif`, `importeAdjudicacion` | Cuando ya está adjudicada: empresa ganadora, su NIF e importe |
+| `adjudicatarios` | Todas las empresas ganadoras (una por lote) con NIF, importe, lote y fecha de adjudicación |
 | `urlDetalle` | Ficha oficial en la Plataforma |
 
 ## Fuente y limitaciones

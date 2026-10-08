@@ -37,10 +37,21 @@ def entrada(
     )
     resultado = """<cac:TenderResult>
           <cbc:ResultCode>8</cbc:ResultCode>
-          <cac:WinningParty><cac:PartyName><cbc:Name>Solar Ejemplo SL</cbc:Name></cac:PartyName></cac:WinningParty>
+          <cac:WinningParty>
+            <cac:PartyIdentification><cbc:ID schemeName="NIF">B12345678</cbc:ID></cac:PartyIdentification>
+            <cac:PartyName><cbc:Name>Solar Ejemplo SL</cbc:Name></cac:PartyName>
+          </cac:WinningParty>
           <cac:AwardedTenderedProject><cac:LegalMonetaryTotal>
             <cbc:TaxExclusiveAmount currencyID="EUR">120000</cbc:TaxExclusiveAmount>
-          </cac:LegalMonetaryTotal></cac:AwardedTenderedProject>
+          </cac:LegalMonetaryTotal><cbc:ProcurementProjectLotID>1</cbc:ProcurementProjectLotID></cac:AwardedTenderedProject>
+          <cbc:AwardDate>2026-10-01</cbc:AwardDate>
+        </cac:TenderResult>
+        <cac:TenderResult>
+          <cbc:ResultCode>8</cbc:ResultCode>
+          <cac:WinningParty><cac:PartyName><cbc:Name>Fotovoltaica Sur SA</cbc:Name></cac:PartyName></cac:WinningParty>
+          <cac:AwardedTenderedProject><cac:LegalMonetaryTotal>
+            <cbc:TaxExclusiveAmount currencyID="EUR">30000</cbc:TaxExclusiveAmount>
+          </cac:LegalMonetaryTotal><cbc:ProcurementProjectLotID>2</cbc:ProcurementProjectLotID></cac:AwardedTenderedProject>
         </cac:TenderResult>""" if con_resultado else ""
     return f"""
   <entry>

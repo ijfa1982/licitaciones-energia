@@ -71,6 +71,11 @@ class TestParser(unittest.TestCase):
         r = regs[3]
         self.assertEqual(r["adjudicatario"], "Solar Ejemplo SL")
         self.assertEqual(r["importeAdjudicacion"], 120000.0)
+        self.assertEqual(r["adjudicatarioNif"], "B12345678")
+        self.assertEqual([a["nombre"] for a in r["adjudicatarios"]], ["Solar Ejemplo SL", "Fotovoltaica Sur SA"])
+        self.assertEqual(r["adjudicatarios"][0]["lote"], "1")
+        self.assertEqual(r["adjudicatarios"][0]["fechaAdjudicacion"], "2026-10-01")
+        self.assertEqual(r["adjudicatarios"][1]["importeSinIva"], 30000.0)
 
 
 class TestFiltros(unittest.TestCase):

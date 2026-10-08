@@ -140,9 +140,26 @@ def parse_entry(entry: Element) -> Optional[dict]:
     proc_code = _text(_child(tp, "ProcedureCode"))
     duration = _child(_child(pp, "PlannedPeriod"), "DurationMeasure")
 
-    result = _child(cfs, "TenderResult")
-    winner = _text(_path(result, "WinningParty", "PartyName", "Name"))
-    awarded = _amount(_path(result, "AwardedTenderedProject", "LegalMonetaryTotal", "TaxExclusiveAmount"))
+    adjudicatarios = []
+    for result in _children(cfs, "TenderResult"):
+        party_w = _child(result, "WinningParty")
+        nombre_w = _text(_path(party_w, "PartyName", "Name"))
+        if not nombre_w:
+            continue
+        nif_w = None
+        for pid in _children(party_w, "PartyIdentification"):
+            nif_w = nif_w or _text(_child(pid, "ID"))
+        adjudicatarios.append({
+            "nombre": nombre_w,
+            "nif": nif_w,
+            "importeSinIva": _amount(
+                _path(result, "AwardedTenderedProject", "LegalMonetaryTotal", "TaxExclusiveAmount")
+            ),
+            "lote": _text(_path(result, "AwardedTenderedProject", "ProcurementProjectLotID")),
+            "fechaAdjudicacion": _date(_text(_child(result, "AwardDate"))),
+        })
+    winner = adjudicatarios[0]["nombre"] if adjudicatarios else None
+    awarded = adjudicatarios[0]["importeSinIva"] if adjudicatarios else None
 
     end_date = _date(_text(_child(deadline, "EndDate")))
     end_time = _time(_text(_child(deadline, "EndTime")))
@@ -174,7 +191,9 @@ def parse_entry(entry: Element) -> Optional[dict]:
         "horaLimite": end_time,
         "numeroLotes": len(_children(cfs, "ProcurementProjectLot")) or None,
         "adjudicatario": winner,
+        "adjudicatarioNif": adjudicatarios[0]["nif"] if adjudicatarios else None,
         "importeAdjudicacion": awarded,
+        "adjudicatarios": adjudicatarios,
         "documentos": _documents(cfs),
         "urlDetalle": link.get("href") if link is not None else None,
         "actualizado": _text(_child(entry, "updated")),

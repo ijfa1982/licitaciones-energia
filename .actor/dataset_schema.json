@@ -7,6 +7,7 @@
         "fields": [
           "titulo",
           "sectores",
+          "relevancia",
           "organoContratacion",
           "comunidadAutonoma",
           "presupuestoSinIva",
@@ -19,15 +20,46 @@
       "display": {
         "component": "table",
         "properties": {
-          "titulo": { "label": "Licitación", "format": "text" },
-          "sectores": { "label": "Sector", "format": "array" },
-          "organoContratacion": { "label": "Órgano de contratación", "format": "text" },
-          "comunidadAutonoma": { "label": "Comunidad", "format": "text" },
-          "presupuestoSinIva": { "label": "Presupuesto sin IVA (€)", "format": "number" },
-          "fechaLimite": { "label": "Fecha límite", "format": "text" },
-          "diasRestantes": { "label": "Días restantes", "format": "number" },
-          "estadoTexto": { "label": "Estado", "format": "text" },
-          "urlDetalle": { "label": "Ficha oficial", "format": "link" }
+          "titulo": {
+            "label": "Licitación",
+            "format": "text"
+          },
+          "sectores": {
+            "label": "Sector",
+            "format": "array"
+          },
+          "organoContratacion": {
+            "label": "Órgano de contratación",
+            "format": "text"
+          },
+          "comunidadAutonoma": {
+            "label": "Comunidad",
+            "format": "text"
+          },
+          "presupuestoSinIva": {
+            "label": "Presupuesto sin IVA (€)",
+            "format": "number"
+          },
+          "fechaLimite": {
+            "label": "Fecha límite",
+            "format": "text"
+          },
+          "diasRestantes": {
+            "label": "Días restantes",
+            "format": "number"
+          },
+          "estadoTexto": {
+            "label": "Estado",
+            "format": "text"
+          },
+          "urlDetalle": {
+            "label": "Ficha oficial",
+            "format": "link"
+          },
+          "relevancia": {
+            "label": "Relevancia",
+            "format": "text"
+          }
         }
       }
     }

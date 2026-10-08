@@ -58,10 +58,10 @@ SECTORES = {
     },
     "movilidad_electrica": {
         "nombre": "Movilidad eléctrica y puntos de recarga",
-        "cpv": ["31158", "34144900", "34144910"],
+        "cpv": ["31158"],
         "palabras": [
-            "punto de recarga", "puntos de recarga", "recarga de vehiculos", "vehiculo electrico",
-            "vehiculos electricos", "electrolinera", "electrolineras",
+            "punto de recarga", "puntos de recarga", "recarga de vehiculos", "recarga electrica",
+            "electrolinera", "electrolineras", "cargadores para vehiculos",
         ],
     },
     "almacenamiento_renovables": {
@@ -78,7 +78,16 @@ SECTORES = {
         "cpv": ["71314", "7132310", "71321"],
         "palabras": ["consultoria energetica", "ingenieria energetica", "plan de transicion energetica"],
     },
+    "vehiculos_electricos": {
+        "nombre": "Compra de vehículos eléctricos",
+        "cpv": ["34144900", "34144910"],
+        "palabras": ["vehiculo electrico", "vehiculos electricos", "motorizacion electrica", "autobus electrico"],
+    },
 }
+
+# Sectores que se buscan si el usuario no elige ninguno (la compra de vehículos es opcional:
+# interesa a concesionarios, no a instaladores ni empresas de servicios energéticos).
+SECTORES_POR_DEFECTO = [k for k in SECTORES if k != "vehiculos_electricos"]
 
 # Palabras del título que indican que no es un contrato energético aunque coincida algún código
 # (iluminación y sonido de eventos, carrozas, fiestas...).

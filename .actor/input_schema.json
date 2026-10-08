@@ -6,7 +6,7 @@
     "sectores": {
       "title": "Sectores energéticos",
       "type": "array",
-      "description": "Qué tipos de licitación buscar. Si no eliges ninguno se buscan todos.",
+      "description": "Qué tipos de licitación buscar. Si no eliges ninguno se buscan todos menos la compra de vehículos eléctricos, que es opcional.",
       "editor": "select",
       "items": {
         "type": "string",
@@ -19,7 +19,8 @@
           "instalaciones_electricas",
           "movilidad_electrica",
           "almacenamiento_renovables",
-          "consultoria_energetica"
+          "consultoria_energetica",
+          "vehiculos_electricos"
         ],
         "enumTitles": [
           "Fotovoltaica y autoconsumo",
@@ -30,7 +31,8 @@
           "Instalaciones eléctricas (BT/MT)",
           "Movilidad eléctrica y puntos de recarga",
           "Almacenamiento y otras renovables",
-          "Ingeniería y consultoría energética"
+          "Ingeniería y consultoría energética",
+          "Compra de vehículos eléctricos (opcional)"
         ]
       },
       "default": []
@@ -42,8 +44,48 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["ES11", "ES12", "ES13", "ES21", "ES22", "ES23", "ES24", "ES30", "ES41", "ES42", "ES43", "ES51", "ES52", "ES53", "ES61", "ES62", "ES63", "ES64", "ES70"],
-        "enumTitles": ["Galicia", "Asturias", "Cantabria", "País Vasco", "Navarra", "La Rioja", "Aragón", "Madrid", "Castilla y León", "Castilla-La Mancha", "Extremadura", "Cataluña", "Comunitat Valenciana", "Illes Balears", "Andalucía", "Región de Murcia", "Ceuta", "Melilla", "Canarias"]
+        "enum": [
+          "ES11",
+          "ES12",
+          "ES13",
+          "ES21",
+          "ES22",
+          "ES23",
+          "ES24",
+          "ES30",
+          "ES41",
+          "ES42",
+          "ES43",
+          "ES51",
+          "ES52",
+          "ES53",
+          "ES61",
+          "ES62",
+          "ES63",
+          "ES64",
+          "ES70"
+        ],
+        "enumTitles": [
+          "Galicia",
+          "Asturias",
+          "Cantabria",
+          "País Vasco",
+          "Navarra",
+          "La Rioja",
+          "Aragón",
+          "Madrid",
+          "Castilla y León",
+          "Castilla-La Mancha",
+          "Extremadura",
+          "Cataluña",
+          "Comunitat Valenciana",
+          "Illes Balears",
+          "Andalucía",
+          "Región de Murcia",
+          "Ceuta",
+          "Melilla",
+          "Canarias"
+        ]
       },
       "default": []
     },
@@ -54,10 +96,26 @@
       "editor": "select",
       "items": {
         "type": "string",
-        "enum": ["PRE", "PUB", "EV", "ADJ", "RES", "ANUL"],
-        "enumTitles": ["Anuncio previo", "En plazo", "Pendiente de adjudicación", "Adjudicada", "Resuelta", "Anulada"]
+        "enum": [
+          "PRE",
+          "PUB",
+          "EV",
+          "ADJ",
+          "RES",
+          "ANUL"
+        ],
+        "enumTitles": [
+          "Anuncio previo",
+          "En plazo",
+          "Pendiente de adjudicación",
+          "Adjudicada",
+          "Resuelta",
+          "Anulada"
+        ]
       },
-      "default": ["PUB"]
+      "default": [
+        "PUB"
+      ]
     },
     "presupuestoMinimo": {
       "title": "Presupuesto mínimo (€ sin IVA)",

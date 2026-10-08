@@ -178,7 +178,8 @@ class TestCasosReales(unittest.TestCase):
         ("Suministro de pellet para las calderas de biomasa de la piscina cubierta municipal", ["09111400"], True),
         ("Sustitución de reguladores para el alumbrado aeronáutico de superficie", ["31224600"], True),
         ("Obras de adecuación de edificio para centro social integrado", ["45000000", "45331000"], True),
-        ("Suministro de un vehículo industrial nuevo, motorización eléctrica", ["34100000", "34144900"], True),
+        # La compra de vehículos eléctricos es un sector opcional, fuera por defecto
+        ("Suministro de un vehículo industrial nuevo, motorización eléctrica", ["34100000", "34144900"], False),
         # Falsos positivos de la primera versión
         ("Contrato de servicios de limpieza del Centro Tecnológico", ["90910000", "50730000", "90911000"], False),
         ("Suministro de materiales de ferretería y otros",
@@ -207,6 +208,29 @@ class TestCasosReales(unittest.TestCase):
             if obtenido != esperado:
                 fallos.append(f"{'debería entrar' if esperado else 'NO debería entrar'}: {titulo}")
         self.assertEqual(fallos, [])
+
+    def test_vehiculos_si_se_eligen(self):
+        cfg = Config(sectores=["vehiculos_electricos"])
+        rec = {"estado": "PUB", "titulo": "Suministro de un vehículo industrial nuevo, motorización eléctrica",
+               "cpv": ["34100000", "34144900"], "fechaLimite": "2026-11-01"}
+        salida = aceptar(rec, cfg, AHORA.date())
+        self.assertEqual(salida["sectores"], ["Compra de vehículos eléctricos"])
+
+    def test_vehiculos_fuera_por_defecto_desde_input(self):
+        self.assertNotIn("vehiculos_electricos", Config.desde_input({}).sectores)
+        self.assertNotIn("vehiculos_electricos", Config.desde_input({"sectores": []}).sectores)
+
+    def test_relevancia(self):
+        cfg = Config()
+        hoy = AHORA.date()
+        base = {"estado": "PUB", "fechaLimite": "2026-11-01"}
+        alta = aceptar({**base, "titulo": "Suministro de luminarias", "cpv": ["31527200"]}, cfg, hoy)
+        media = aceptar({**base, "titulo": "Obras de adecuación de edificio para centro social",
+                         "cpv": ["45000000", "45331000"]}, cfg, hoy)
+        por_titulo = aceptar({**base, "titulo": "Renovación del alumbrado público", "cpv": ["45000000"]}, cfg, hoy)
+        self.assertEqual(alta["relevancia"], "alta")
+        self.assertEqual(media["relevancia"], "media")
+        self.assertEqual(por_titulo["relevancia"], "alta")
 
 
 class TestMain(unittest.TestCase):

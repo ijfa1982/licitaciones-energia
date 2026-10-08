@@ -9,6 +9,7 @@ Pensado para **instaladores, ingenierías, ESE y comercializadoras** que no tien
 ## Qué lo diferencia
 
 - **Filtro energético listo para usar**: 9 sectores definidos por códigos CPV y por palabras del título, para captar también licitaciones mal clasificadas (por ejemplo, una renovación de alumbrado LED registrada como "obras").
+- **Menos ruido**: un código CPV energético solo cuenta si es el principal del contrato o si al menos la mitad de sus códigos son energéticos, y se excluyen la iluminación y el sonido de eventos y fiestas. Cada resultado indica su relevancia (alta o media).
 - **Solo lo que está en plazo**: por defecto, licitaciones abiertas con fecha límite futura y días restantes calculados.
 - **Aviso diario sin duplicados**: con *"Solo nuevas o modificadas desde la última ejecución"* y una tarea programada, recibes únicamente lo nuevo.
 - **Filtros de pyme**: comunidad autónoma, presupuesto mínimo y máximo, contratos menores opcionales.
@@ -66,6 +67,7 @@ Para un aviso diario: crea una **Tarea** con tu configuración, activa *"Solo nu
 | --- | --- |
 | `titulo`, `expediente` | Objeto del contrato y número de expediente |
 | `sectores`, `motivoCoincidencia` | Sector energético detectado y por qué (CPV o palabra del título) |
+| `relevancia` | `alta`: la energía es el objeto principal del contrato. `media`: es una parte importante de un contrato más amplio (por ejemplo, una obra de edificio con climatización) |
 | `estado`, `estadoTexto` | PUB = en plazo, EV = pendiente de adjudicación, ADJ = adjudicada… |
 | `organoContratacion`, `organoNif`, `organosSuperiores` | Quién contrata |
 | `presupuestoSinIva`, `presupuestoConIva`, `valorEstimado` | Importes en euros |

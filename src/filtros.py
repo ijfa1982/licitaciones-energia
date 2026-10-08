@@ -105,6 +105,11 @@ def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str], str]:
         motivos.append(f'título: "{palabra_extra}"')
         por_titulo = True
 
+    if not por_titulo and cfg.usar_palabras_clave:
+        # El título también cuenta para la relevancia aunque el sector se detectara por CPV.
+        por_titulo = any(
+            _contiene(titulo_norm, p) for clave in cfg.sectores for p in SECTORES[clave]["palabras"]
+        )
     relevancia = "alta" if (principal_energetico or por_titulo) else "media"
     return sectores, motivos, relevancia
 

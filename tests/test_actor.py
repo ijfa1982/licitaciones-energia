@@ -239,6 +239,13 @@ class TestCasosReales(unittest.TestCase):
         self.assertEqual(alta["relevancia"], "alta")
         self.assertEqual(media["relevancia"], "media")
         self.assertEqual(por_titulo["relevancia"], "alta")
+        # Casos reales: CPV secundario de energía pero el título lo deja claro -> alta
+        gas = aceptar({**base, "titulo": "Gas Natural para Edificio Sede de la TGSS de Badajoz",
+                       "cpv": ["09000000", "09123000"]}, cfg, hoy)
+        clima = aceptar({**base, "titulo": "Mantenimiento aparatos de climatización de los edificios",
+                         "cpv": ["50000000", "50730000"]}, cfg, hoy)
+        self.assertEqual(gas["relevancia"], "alta")
+        self.assertEqual(clima["relevancia"], "alta")
 
 
 class TestMain(unittest.TestCase):

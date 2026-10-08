@@ -1,0 +1,12 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Licitaciones de energía encontradas",
+  "properties": {
+    "licitaciones": {
+      "type": "string",
+      "title": "Licitaciones",
+      "description": "Licitaciones públicas de energía que cumplen los filtros, con sector, relevancia, órgano de contratación, presupuesto, plazo, pliegos y enlace a la ficha oficial.",
+      "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+    }
+  }
+}

@@ -14,5 +14,6 @@
     "build": "latest",
     "timeoutSecs": 1800,
     "memoryMbytes": 512
-  }
+  },
+  "output": "./output_schema.json"
 }

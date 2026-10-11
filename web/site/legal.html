@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Información legal · Licitaciones Energía</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="img/icono-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+<script src="config.js"></script>
+</head>
+<body>
+<header class="barra">
+  <a class="marca" href="./"><img src="img/icono-192.png" alt="" width="28" height="28"><span>Licitaciones Energía</span></a>
+</header>
+<main class="legal">
+  <h1>Información legal</h1>
+
+  <h2 id="aviso">Aviso legal</h2>
+  <p>En cumplimiento del artículo 10 de la Ley 34/2002, de servicios de la sociedad de la información y de comercio electrónico (LSSI), se informa de que este sitio web pertenece a:</p>
+  <ul>
+    <li>Titular: <span data-c="titular"></span></li>
+    <li>NIF: <span data-c="nif"></span></li>
+    <li>Domicilio: <span data-c="domicilio"></span></li>
+    <li>Email de contacto: <span data-c="emailContacto"></span></li>
+  </ul>
+  <p>La información sobre licitaciones procede de la sindicación de datos abiertos de la Plataforma de Contratación del Sector Público y se reutiliza conforme a la Ley 37/2007, sobre reutilización de la información del sector público. Se muestra de forma resumida y con fines informativos: la información válida es siempre la publicada en la ficha oficial de cada licitación, a la que se enlaza. Este servicio no es oficial ni está vinculado a ninguna Administración.</p>
+
+  <h2 id="privacidad">Política de privacidad</h2>
+  <p><strong>Responsable:</strong> el titular indicado en el aviso legal.</p>
+  <p><strong>Qué datos tratamos:</strong> si te suscribes a un plan de pago, tu email, el nombre de tu empresa, tus filtros de alerta y los datos de facturación. Los datos de la tarjeta los trata directamente Stripe, nunca llegan a nosotros. Si solo usas el buscador, no pedimos ningún dato.</p>
+  <p><strong>Para qué:</strong> enviarte las alertas y los informes del plan contratado, gestionar el cobro y emitir las facturas.</p>
+  <p><strong>Base legal:</strong> la ejecución del contrato de suscripción (art. 6.1.b RGPD) y el cumplimiento de obligaciones fiscales (art. 6.1.c RGPD).</p>
+  <p><strong>Cuánto tiempo:</strong> mientras dure la suscripción y, después, el plazo que exija la normativa fiscal.</p>
+  <p><strong>Con quién se comparten:</strong> Stripe Payments Europe (cobros), GitHub (alojamiento de la web y envío programado de alertas) y el proveedor de correo con el que se envían las alertas. No se ceden datos a terceros para publicidad.</p>
+  <p><strong>Tus derechos:</strong> puedes pedir el acceso, la rectificación, la supresión, la oposición, la limitación o la portabilidad de tus datos escribiendo al email de contacto. Si no quedas satisfecho, puedes reclamar ante la Agencia Española de Protección de Datos (aepd.es).</p>
+  <p><strong>Datos de empresas adjudicatarias:</strong> el ranking muestra nombres de empresas y NIF publicados por las Administraciones en la Plataforma de Contratación. Si eres empresario individual y aparece tu nombre, puedes pedir que lo ocultemos escribiendo al email de contacto.</p>
+
+  <h2 id="condiciones">Condiciones de contratación</h2>
+  <ul>
+    <li><strong>Planes:</strong> Pro, 19 € al mes, y Empresa, 49 € al mes. Precios sin IVA; el IVA (21 %) se añade en el pago.</li>
+    <li><strong>Pago:</strong> mensual y por adelantado, con tarjeta a través de Stripe. La suscripción se renueva cada mes hasta que la canceles.</li>
+    <li><strong>Baja:</strong> sin permanencia. Puedes cancelar en cualquier momento desde el portal de clientes o escribiendo al email de contacto; el servicio sigue activo hasta el final del mes ya pagado.</li>
+    <li><strong>Servicio:</strong> envío diario por email de las licitaciones nuevas que encajen con tus filtros y, en el plan Empresa, del ranking semanal de adjudicatarias. Las alertas se generan de forma automática a partir de los datos oficiales; no garantizamos que aparezcan todas las licitaciones publicadas, en especial las que algunas comunidades publican solo en sus plataformas propias.</li>
+    <li><strong>Destinatarios:</strong> el servicio está pensado para empresas y profesionales. Si contratas como consumidor, tienes 14 días para desistir desde la contratación; al empezar a recibir las alertas antes de que acabe ese plazo, aceptas que se te cobre la parte proporcional del servicio ya prestado.</li>
+    <li><strong>Responsabilidad:</strong> la información es orientativa. Antes de presentar una oferta, consulta siempre los pliegos y la ficha oficial.</li>
+    <li><strong>Ley aplicable:</strong> legislación española.</li>
+  </ul>
+
+  <h2 id="cookies">Cookies</h2>
+  <p>Esta web no usa cookies de seguimiento ni de publicidad. El navegador guarda una copia de la web y de los datos para poder abrirla sin conexión (almacenamiento técnico, exento de consentimiento). Las tipografías se cargan desde Google Fonts, lo que implica que tu navegador se conecta a servidores de Google.</p>
+</main>
+<footer class="pie"><a href="./">Volver al buscador</a></footer>
+<script>
+  document.querySelectorAll("[data-c]").forEach((el) => {
+    const v = (window.CONFIG || {})[el.dataset.c];
+    if (v) el.textContent = v; else { el.textContent = "pendiente de completar"; el.className = "pendiente"; }
+  });
+</script>
+</body>
+</html>

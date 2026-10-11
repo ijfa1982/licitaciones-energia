@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Licitaciones de energía abiertas en España</title>
+<meta name="description" content="Licitaciones públicas de fotovoltaica, alumbrado, climatización, puntos de recarga, instalaciones eléctricas y suministro de energía abiertas hoy en España. Actualizado cada día con datos oficiales.">
+<meta name="theme-color" content="#1F57B8">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="img/icono-192.png">
+<link rel="apple-touch-icon" href="img/icono-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+<script src="config.js"></script>
+</head>
+<body>
+<a class="saltar" href="#lista">Ir a las licitaciones</a>
+<header class="barra">
+  <a class="marca" href="./"><img src="img/icono-192.png" alt="" width="28" height="28"><span>Licitaciones Energía</span></a>
+  <nav aria-label="Secciones">
+    <a href="#lista">Buscar</a>
+    <a href="#ganadores">Quién gana</a>
+    <a href="#precios">Precios</a>
+  </nav>
+  <a class="boton boton-primario" href="#precios">Crear alerta</a>
+</header>
+
+<main>
+  <section class="portada">
+    <h1 id="titular">Licitaciones de energía abiertas hoy en España</h1>
+    <p class="entradilla">Fotovoltaica, alumbrado, climatización, puntos de recarga, instalaciones eléctricas y suministro. Sacadas cada mañana de la Plataforma de Contratación del Estado y filtradas para que no tengas que revisar miles de anuncios.</p>
+    <p class="actualizado" id="actualizado">Cargando datos…</p>
+  </section>
+
+  <section class="filtros" aria-label="Filtros">
+    <label class="campo campo-texto">
+      <span>Buscar</span>
+      <input id="f-texto" type="search" placeholder="Colegio, LED, aerotermia, Ayuntamiento de…">
+    </label>
+    <label class="campo"><span>Sector</span><select id="f-sector"><option value="">Todos</option></select></label>
+    <label class="campo"><span>Comunidad</span><select id="f-comunidad"><option value="">Todas</option></select></label>
+    <label class="campo"><span>Importe mínimo</span>
+      <select id="f-importe">
+        <option value="0">Cualquiera</option><option value="15000">15.000 €</option><option value="50000">50.000 €</option>
+        <option value="100000">100.000 €</option><option value="500000">500.000 €</option>
+      </select>
+    </label>
+    <label class="campo"><span>Ordenar</span>
+      <select id="f-orden"><option value="plazo">Plazo más cercano</option><option value="importe">Importe mayor</option><option value="recientes">Publicadas recientemente</option></select>
+    </label>
+  </section>
+
+  <section id="lista" class="lista" aria-live="polite">
+    <p class="resumen" id="resumen"></p>
+    <ol id="licitaciones" class="licitaciones"></ol>
+    <button id="mas" class="boton boton-secundario" hidden>Ver más licitaciones</button>
+    <aside class="aviso-alerta">
+      <p><strong>¿Te avisamos cuando salga una como estas?</strong> Con el plan Pro recibes cada mañana por email solo las nuevas de tu sector y tu zona.</p>
+      <a class="boton boton-primario" href="#precios">Ver planes</a>
+    </aside>
+  </section>
+
+  <section id="ganadores" class="ganadores">
+    <h2>Quién gana las licitaciones de energía</h2>
+    <p class="nota" id="ganadores-nota">Empresas con más contratos adjudicados en los últimos meses.</p>
+    <div class="tabla-envoltorio">
+      <table>
+        <thead><tr><th scope="col">Empresa</th><th scope="col" class="num">Contratos</th><th scope="col" class="num">Importe adjudicado</th><th scope="col">Dónde</th></tr></thead>
+        <tbody id="ranking"></tbody>
+      </table>
+    </div>
+    <p class="candado">El ranking completo, con todas las empresas, NIF y sectores en Excel, llega cada lunes a los suscriptores del plan Empresa.</p>
+  </section>
+
+  <section id="precios" class="precios">
+    <h2>Planes</h2>
+    <div class="planes">
+      <article class="plan">
+        <h3>Gratis</h3>
+        <p class="precio">0 €</p>
+        <ul>
+          <li>Buscador de licitaciones abiertas</li>
+          <li>Filtros por sector, comunidad e importe</li>
+          <li>Enlace a la ficha oficial y a los pliegos</li>
+          <li>Las 10 empresas que más ganan</li>
+        </ul>
+        <a class="boton boton-secundario" href="#lista">Usar el buscador</a>
+      </article>
+      <article class="plan plan-destacado">
+        <h3>Pro</h3>
+        <p class="precio">19 € <span>al mes + IVA</span></p>
+        <ul>
+          <li>Todo lo del plan gratis</li>
+          <li>Email cada mañana con las licitaciones nuevas de tu alerta</li>
+          <li>Una alerta: sectores, comunidades, importe mínimo y palabras clave</li>
+          <li>Sin permanencia: te das de baja cuando quieras</li>
+        </ul>
+        <a class="boton boton-primario" data-plan="pro" href="#">Empezar con Pro</a>
+      </article>
+      <article class="plan">
+        <h3>Empresa</h3>
+        <p class="precio">49 € <span>al mes + IVA</span></p>
+        <ul>
+          <li>Todo lo del plan Pro</li>
+          <li>Hasta 5 alertas para distintos equipos o zonas</li>
+          <li>Ranking completo de empresas adjudicatarias en Excel, cada lunes</li>
+          <li>Factura a nombre de tu empresa</li>
+        </ul>
+        <a class="boton boton-secundario" data-plan="empresa" href="#">Empezar con Empresa</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="preguntas">
+    <h2>Preguntas frecuentes</h2>
+    <details><summary>¿De dónde salen los datos?</summary><p>De la sindicación de datos abiertos de la Plataforma de Contratación del Sector Público (Ministerio de Hacienda). Cada licitación enlaza a su ficha oficial, donde están los pliegos y la forma de presentarse.</p></details>
+    <details><summary>¿Qué cuenta como licitación de energía?</summary><p>Fotovoltaica y autoconsumo, eficiencia energética, alumbrado público, climatización y bombas de calor, puntos de recarga, instalaciones eléctricas, suministro de electricidad y gas, almacenamiento, renovables y consultoría energética. Se detectan por los códigos CPV del contrato y por palabras del título, y se descartan las de iluminación de fiestas y eventos.</p></details>
+    <details><summary>¿Están todas las de mi comunidad?</summary><p>Están las que se publican en la Plataforma del Estado, que incluye la Administración General, muchas comunidades y miles de ayuntamientos. Algunas comunidades (como Cataluña, País Vasco, Galicia o Andalucía) publican parte de sus contratos solo en su plataforma propia.</p></details>
+    <details><summary>¿Cómo me doy de baja?</summary><p id="baja">Desde el enlace de gestión de tu suscripción que recibes al pagar, o respondiendo a cualquier email de alerta. No hay permanencia.</p></details>
+    <details><summary>¿Puedo instalarla en el móvil?</summary><p>Sí. En Android, abre el menú del navegador y pulsa «Instalar aplicación». En iPhone, pulsa Compartir y luego «Añadir a pantalla de inicio».</p></details>
+  </section>
+</main>
+
+<footer class="pie">
+  <p>Datos: Plataforma de Contratación del Sector Público, reutilizados conforme a la Ley 37/2007. Este servicio no es oficial ni está vinculado a la Administración.</p>
+  <nav aria-label="Legal"><a href="legal.html#aviso">Aviso legal</a><a href="legal.html#privacidad">Privacidad</a><a href="legal.html#condiciones">Condiciones de contratación</a><a href="legal.html#cookies">Cookies</a></nav>
+  <button id="instalar" class="boton boton-secundario" hidden>Instalar en el móvil</button>
+</footer>
+
+<template id="tpl-licitacion">
+  <li class="licitacion">
+    <div class="cuerpo">
+      <a class="titulo" target="_blank" rel="noopener"></a>
+      <p class="organo"></p>
+      <p class="etiquetas"></p>
+    </div>
+    <div class="cifras">
+      <p class="importe"></p>
+      <div class="plazo"><span class="cable"><span class="conductor"></span></span><span class="dias"></span></div>
+    </div>
+  </li>
+</template>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+# Actualiza la web de licitaciones cada mañana y envía las alertas a los suscriptores.
+name: Web y alertas
+
+on:
+  schedule:
+    - cron: "20 5 * * *"   # 07:20 en Madrid (horario de verano), 06:20 en invierno
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  URL_WEB: https://ijfa1982.github.io/licitaciones-energia
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      HAY_SUSCRIPTORES: ${{ secrets.SUSCRIPTORES != '' }}
+    environment:
+      name: github-pages
+      url: ${{ steps.despliegue.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+      - name: Descargar licitaciones del día
+        run: python -m web.generar_datos --salida web/site/data --privado web/privado --previos "$URL_WEB/data"
+      - name: Enviar alertas a los suscriptores
+        if: ${{ env.HAY_SUSCRIPTORES == 'true' }}
+        env:
+          SUSCRIPTORES: ${{ secrets.SUSCRIPTORES }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          REMITENTE: ${{ secrets.REMITENTE }}
+        run: python -m web.enviar_alertas --privado web/privado
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/site
+      - id: despliegue
+        uses: actions/deploy-pages@v4

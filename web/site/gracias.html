@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suscripción activada · Licitaciones Energía</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="img/icono-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="estilos.css">
+<script src="config.js"></script>
+</head>
+<body>
+<header class="barra"><a class="marca" href="./"><img src="img/icono-192.png" alt="" width="28" height="28"><span>Licitaciones Energía</span></a></header>
+<main class="legal">
+  <h1>Pago recibido. Falta un paso: configurar tu alerta</h1>
+  <p>Dinos qué licitaciones quieres recibir y activamos tu alerta en menos de 24 horas laborables. El primer email te llegará a la mañana siguiente.</p>
+  <p><a class="boton boton-primario" id="configurar" href="#">Configurar mi alerta por email</a></p>
+  <p>Si prefieres, responde al email de confirmación de Stripe con los mismos datos.</p>
+</main>
+<script>
+  const C = window.CONFIG || {};
+  const cuerpo = encodeURIComponent("Email donde quiero recibir las alertas:\nEmpresa:\nNIF (para la factura):\nSectores (fotovoltaica, alumbrado, climatización, recarga, instalaciones eléctricas, suministro, eficiencia, renovables, consultoría):\nComunidades autónomas:\nImporte mínimo:\nPalabras clave (opcional):\n");
+  const a = document.getElementById("configurar");
+  if (C.emailContacto) a.href = `mailto:${C.emailContacto}?subject=${encodeURIComponent("Configurar mi alerta")}&body=${cuerpo}`;
+  else a.hidden = true;
+</script>
+</body>
+</html>

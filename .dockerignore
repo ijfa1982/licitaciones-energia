@@ -3,3 +3,5 @@ tests
 __pycache__
 *.pyc
 storage
+web
+.github

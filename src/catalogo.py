@@ -49,8 +49,9 @@ SECTORES = {
     "instalaciones_electricas": {
         "nombre": "Instalaciones eléctricas, media y baja tensión",
         # 45310000 general y 45311/45315/45317 eléctricas; se excluyen 45312 (alarmas y antenas),
-        # 45313 (ascensores) y 45314 (telecomunicaciones).
-        "cpv": ["45310000", "45311", "45315", "45317", "311", "3168", "50532", "50711"],
+        # 45313 (ascensores) y 45314 (telecomunicaciones). De 311 solo generadores (3112) y
+        # transformadores (3117): los motores (3111) y el material eléctrico 3168 traían ruido.
+        "cpv": ["45310000", "45311", "45315", "45317", "3112", "3117", "50532", "50711"],
         "palabras": [
             "instalacion electrica", "instalaciones electricas", "baja tension", "media tension",
             "alta tension", "centro de transformacion", "grupo electrogeno", "cuadro electrico",
@@ -66,9 +67,9 @@ SECTORES = {
     },
     "almacenamiento_renovables": {
         "nombre": "Almacenamiento y otras renovables",
-        "cpv": ["3143", "3144", "311213", "45251160"],
+        "cpv": ["3143", "311213", "45251160"],  # 3144 (pilas y baterías sueltas) no
         "palabras": [
-            "almacenamiento energetico", "almacenamiento de energia", "baterias", "eolic",
+            "almacenamiento energetico", "almacenamiento de energia", "baterias de almacenamiento", "eolic",
             "biomasa", "hidrogeno verde", "comunidad energetica", "comunidades energeticas",
             "minihidraulica",
         ],

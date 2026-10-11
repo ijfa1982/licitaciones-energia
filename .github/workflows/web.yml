@@ -36,6 +36,8 @@ jobs:
         run: pip install -r requirements.txt
       - name: Descargar licitaciones del día
         run: python -m web.generar_datos --salida web/site/data --privado web/privado --previos "$URL_WEB/data"
+      - name: Generar el mapa de España
+        run: python -m web.mapa
       - name: Descargar fotos y créditos (Wikimedia Commons)
         run: python -m web.fotos
       - name: Enviar alertas a los suscriptores

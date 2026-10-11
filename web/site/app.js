@@ -162,7 +162,97 @@
   }
 
   const contar = (lista, f) => lista.reduce((m, r) => { const k = f(r); if (k) m[k] = (m[k] || 0) + 1; return m; }, {});
+  let geo = null;
+  const NS = "http://www.w3.org/2000/svg";
+  const nivel = (n, max) => (n === 0 ? 0 : Math.min(4, 1 + Math.floor((n / max) * 3.999)));
+  function caja(d) {
+    const nums = d.match(/-?\d+(\.\d+)?/g).map(Number);
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0; i < nums.length; i += 2) {
+      x0 = Math.min(x0, nums[i]); x1 = Math.max(x1, nums[i]); y0 = Math.min(y0, nums[i + 1]); y1 = Math.max(y1, nums[i + 1]);
+    }
+    return [x0, y0, x1 - x0, y1 - y0];
+  }
+  function pintarSvg() {
+    const svg = $("mapa-svg");
+    const ca = $("f-comunidad").value;
+    const lista = datos.abiertas;
+    svg.replaceChildren();
+    let capa, viewBox;
+    if (ca) {
+      capa = geo.provincias.filter((p) => p.comunidad === ca);
+      const cuenta = contar(lista.filter((r) => r.comunidadAutonoma === ca), provinciaDe);
+      capa = capa.map((p) => ({ ...p, n: cuenta[p.nombre] || 0, valor: p.nombre, campo: "f-provincia" }));
+      const cajas = capa.map((p) => caja(p.d));
+      if (cajas.length) {
+        const x0 = Math.min(...cajas.map((c) => c[0])), y0 = Math.min(...cajas.map((c) => c[1]));
+        const x1 = Math.max(...cajas.map((c) => c[0] + c[2])), y1 = Math.max(...cajas.map((c) => c[1] + c[3]));
+        const m = Math.max(x1 - x0, y1 - y0) * 0.08;
+        viewBox = [x0 - m, y0 - m, x1 - x0 + 2 * m, y1 - y0 + 2 * m];
+      }
+    } else {
+      const cuenta = contar(lista, (r) => r.comunidadAutonoma);
+      capa = geo.comunidades.map((c) => ({ ...c, n: cuenta[c.nombre] || 0, valor: c.nombre, campo: "f-comunidad" }));
+    }
+    viewBox = viewBox || [0, 0, geo.ancho, geo.alto];
+    svg.setAttribute("viewBox", viewBox.join(" "));
+    const escalaTexto = viewBox[2] / geo.ancho;
+    const max = Math.max(1, ...capa.map((c) => c.n));
+    if (!ca && geo.recuadroCanarias) {
+      const [x, y, w, hh] = geo.recuadroCanarias;
+      const r = document.createElementNS(NS, "rect");
+      Object.entries({ x, y, width: w, height: hh, class: "recuadro" }).forEach(([k, v]) => r.setAttribute(k, v));
+      svg.append(r);
+    }
+    const sel = $("f-provincia").value;
+    capa.forEach((c) => {
+      const p = document.createElementNS(NS, "path");
+      p.setAttribute("d", c.d);
+      p.setAttribute("class", "zona");
+      p.dataset.nivel = nivel(c.n, max);
+      p.setAttribute("tabindex", "0");
+      p.setAttribute("role", "button");
+      p.setAttribute("aria-label", `${c.nombre}: ${c.n} ${c.n === 1 ? "licitación abierta" : "licitaciones abiertas"}`);
+      if (ca && sel === c.nombre) p.setAttribute("aria-pressed", "true");
+      const titulo = document.createElementNS(NS, "title"); titulo.textContent = `${c.nombre}: ${c.n}`; p.append(titulo);
+      const accion = () => {
+        if (c.campo === "f-comunidad") { $("f-comunidad").value = c.valor; $("f-provincia").value = ""; }
+        else { $("f-provincia").value = sel === c.valor ? "" : c.valor; }
+        $("f-municipio").value = "";
+        refrescar();
+      };
+      p.addEventListener("click", accion);
+      p.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); accion(); } });
+      svg.append(p);
+    });
+    capa.forEach((c) => {
+      if (!c.n) return;
+      const t = document.createElementNS(NS, "text");
+      t.setAttribute("x", c.c[0]); t.setAttribute("y", c.c[1]);
+      t.setAttribute("class", "cifra");
+      t.setAttribute("font-size", (ca ? 30 : 26) * escalaTexto);
+      t.setAttribute("stroke-width", 5 * escalaTexto);
+      t.textContent = c.n;
+      svg.append(t);
+    });
+    $("volver").hidden = !ca;
+  }
+  async function cargarMapa() {
+    try {
+      const r = await fetch("data/mapa.json");
+      if (!r.ok) return;
+      geo = await r.json();
+      if (!geo.comunidades?.length) { geo = null; return; }
+      $("mapa-svg").removeAttribute("hidden"); $("teselas").hidden = true; $("leyenda").hidden = false;
+      if (datos.abiertas.length) pintarMapa();
+    } catch (e) { geo = null; }
+  }
+  $("volver").addEventListener("click", () => {
+    $("f-comunidad").value = ""; $("f-provincia").value = ""; $("f-municipio").value = ""; refrescar();
+  });
+
   function pintarMapa() {
+    if (geo) { pintarSvg(); pintarDetalle(); return; }
     const cont = $("teselas");
     const porCa = contar(datos.abiertas, (r) => r.comunidadAutonoma);
     const max = Math.max(1, ...Object.values(porCa));
@@ -275,6 +365,6 @@
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 
   enlacesPlanes();
-  cargar();
+  cargar().then(cargarMapa);
   cargarCreditos();
 })();

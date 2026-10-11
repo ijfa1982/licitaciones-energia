@@ -206,3 +206,25 @@ td small { display: block; color: var(--acero); }
   .tesela-iso { display: block; }
 }
 @media (max-width: 860px) { .filtros { grid-template-columns: 1fr 1fr; } }
+
+/* Mapa real (SVG generado a partir de los contornos del IGN) */
+.mapa-lienzo { position: relative; }
+.mapa-svg { display: block; width: 100%; height: auto; max-height: 620px; }
+.zona { fill: var(--chapa); stroke: var(--hormigon); stroke-width: 1.2; vector-effect: non-scaling-stroke; cursor: pointer; transition: fill .15s; }
+.zona[data-nivel="1"] { fill: #C9CED4; }
+.zona[data-nivel="2"] { fill: #8F98A3; }
+.zona[data-nivel="3"] { fill: #56606B; }
+.zona[data-nivel="4"] { fill: var(--grafito); }
+.zona:hover, .zona:focus-visible { fill: var(--senal); outline: none; }
+.zona[aria-pressed="true"] { fill: var(--senal); }
+.cifra { font-family: var(--display); font-weight: 700; text-anchor: middle; dominant-baseline: central; pointer-events: none;
+  fill: var(--grafito); stroke: var(--chapa); paint-order: stroke; }
+.recuadro { fill: none; stroke: var(--acero); stroke-width: 1; vector-effect: non-scaling-stroke; stroke-dasharray: 4 3; }
+.volver { position: absolute; top: 0; left: 0; z-index: 1; font: 600 1rem/1.2 var(--display); letter-spacing: .03em;
+  padding: 8px 12px; border: 2px solid var(--grafito); background: var(--chapa); color: var(--grafito); border-radius: 2px; cursor: pointer; }
+.volver:hover { background: var(--senal); border-color: var(--senal); }
+.leyenda { display: flex; align-items: center; gap: 4px; margin: 10px 0 0; font-size: .82rem; color: var(--acero); }
+.leyenda span { margin: 0 4px; }
+.leyenda i { width: 26px; height: 10px; display: inline-block; }
+.leyenda i[data-nivel="1"] { background: #C9CED4; } .leyenda i[data-nivel="2"] { background: #8F98A3; }
+.leyenda i[data-nivel="3"] { background: #56606B; } .leyenda i[data-nivel="4"] { background: var(--grafito); }

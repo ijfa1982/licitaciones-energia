@@ -51,7 +51,12 @@
       <p class="nota">Pulsa una comunidad para ver sus provincias y municipios y filtrar el listado.</p>
     </div>
     <div class="mapa-cuerpo">
-      <div class="teselas" id="teselas" role="group" aria-label="Comunidades autónomas"></div>
+      <div class="mapa-lienzo">
+        <button class="volver" id="volver" hidden>Ver toda España</button>
+        <svg id="mapa-svg" class="mapa-svg" role="group" aria-label="Mapa de España por comunidades autónomas" hidden></svg>
+        <div class="teselas" id="teselas" role="group" aria-label="Comunidades autónomas"></div>
+        <p class="leyenda" id="leyenda" hidden><span>Menos</span><i data-nivel="1"></i><i data-nivel="2"></i><i data-nivel="3"></i><i data-nivel="4"></i><span>Más licitaciones</span></p>
+      </div>
       <aside class="detalle" id="detalle" aria-live="polite">
         <p class="detalle-vacio">Elige una comunidad en el mapa.</p>
       </aside>

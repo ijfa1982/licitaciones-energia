@@ -1,5 +1,5 @@
 // Permite instalar la web como app y abrirla sin conexión con los últimos datos descargados.
-const CACHE = "licitaciones-v1";
+const CACHE = "licitaciones-v2";
 const BASE = ["./", "index.html", "estilos.css", "app.js", "config.js", "manifest.webmanifest", "img/icono-192.png"];
 self.addEventListener("install", (e) => e.waitUntil(caches.open(CACHE).then((c) => c.addAll(BASE))));
 self.addEventListener("activate", (e) => e.waitUntil(

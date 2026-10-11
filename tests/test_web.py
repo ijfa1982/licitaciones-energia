@@ -101,3 +101,15 @@ class TestWeb(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestFotos(unittest.TestCase):
+    def test_extraer_creditos(self):
+        from web import fotos
+        datos = {"query": {"pages": {"1": {"imageinfo": [{
+            "thumburl": "https://upload.wikimedia.org/x/1600px-a.jpg", "descriptionurl": "https://commons.wikimedia.org/wiki/File:A.jpg",
+            "extmetadata": {"Artist": {"value": '<a href="u">Ana &amp; Luis</a>'}, "LicenseShortName": {"value": "CC BY-SA 4.0"}}}]}}}}
+        m = fotos.extraer(datos)
+        self.assertEqual(m["autor"], "Ana & Luis")
+        self.assertEqual(m["licencia"], "CC BY-SA 4.0")
+        self.assertIsNone(fotos.extraer({"query": {"pages": {"-1": {"missing": ""}}}}))

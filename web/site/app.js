@@ -129,11 +129,43 @@
     rellenarSelect($("f-sector"), datos.abiertas.flatMap((r) => r.sectores || []));
     rellenarSelect($("f-comunidad"), datos.abiertas.map((r) => r.comunidadAutonoma));
     pintar();
+    pintarSectores();
     pintarRanking();
   }
 
+  function pintarSectores() {
+    document.querySelectorAll(".sector").forEach((b) => {
+      const n = datos.abiertas.filter((r) => (r.sectores || []).includes(b.dataset.sector)).length;
+      b.querySelector(".sector-n").textContent = `${n} ${n === 1 ? "abierta" : "abiertas"}`;
+      b.setAttribute("aria-pressed", String($("f-sector").value === b.dataset.sector));
+    });
+  }
+  document.querySelectorAll(".sector").forEach((b) => b.addEventListener("click", () => {
+    const sel = $("f-sector");
+    if (![...sel.options].some((o) => o.value === b.dataset.sector)) sel.add(new Option(b.dataset.sector, b.dataset.sector));
+    sel.value = sel.value === b.dataset.sector ? "" : b.dataset.sector;
+    visibles = POR_PAGINA; pintar(); pintarSectores();
+    $("lista").scrollIntoView({ behavior: "smooth" });
+  }));
+
+  async function cargarCreditos() {
+    try {
+      const r = await fetch("img/fotos/creditos.json");
+      if (!r.ok) return;
+      const lista = await r.json();
+      const p = $("creditos");
+      p.textContent = "Fotos de Wikimedia Commons: ";
+      lista.forEach((c, i) => {
+        const a = document.createElement("a");
+        a.href = c.pagina; a.target = "_blank"; a.rel = "noopener";
+        a.textContent = `${c.alt}, ${c.autor}`;
+        p.append(a, ` (${c.licencia})${i < lista.length - 1 ? "; " : "."}`);
+      });
+    } catch (e) { /* sin créditos si no hay fotos */ }
+  }
+
   ["f-texto", "f-sector", "f-comunidad", "f-importe", "f-orden"].forEach((id) =>
-    $(id).addEventListener("input", () => { visibles = POR_PAGINA; pintar(); }));
+    $(id).addEventListener("input", () => { visibles = POR_PAGINA; pintar(); pintarSectores(); }));
   $("mas").addEventListener("click", () => { visibles += POR_PAGINA; pintar(); });
 
   let aviso;
@@ -143,4 +175,5 @@
 
   enlacesPlanes();
   cargar();
+  cargarCreditos();
 })();

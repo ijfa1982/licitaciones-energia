@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Licitaciones de energía abiertas en España</title>
 <meta name="description" content="Licitaciones públicas de fotovoltaica, alumbrado, climatización, puntos de recarga, instalaciones eléctricas y suministro de energía abiertas hoy en España. Actualizado cada día con datos oficiales.">
-<meta name="theme-color" content="#1F57B8">
+<meta name="theme-color" content="#22272D">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="img/icono-192.png">
 <link rel="apple-touch-icon" href="img/icono-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="estilos.css">
 <script src="config.js"></script>
 </head>
@@ -27,11 +27,22 @@
   <a class="boton boton-primario" href="#precios">Crear alerta</a>
 </header>
 
-<main>
-  <section class="portada">
+<section class="portada">
+  <img class="portada-foto" src="img/fotos/portada.jpg" alt="" onerror="this.remove()">
+  <div class="portada-texto">
     <h1 id="titular">Licitaciones de energía abiertas hoy en España</h1>
     <p class="entradilla">Fotovoltaica, alumbrado, climatización, puntos de recarga, instalaciones eléctricas y suministro. Sacadas cada mañana de la Plataforma de Contratación del Estado y filtradas para que no tengas que revisar miles de anuncios.</p>
     <p class="actualizado" id="actualizado">Cargando datos…</p>
+  </div>
+</section>
+<div class="franja" aria-hidden="true"></div>
+
+<main>
+  <section class="sectores" aria-label="Buscar por sector">
+    <button class="sector" data-sector="Fotovoltaica y autoconsumo"><img src="img/fotos/fotovoltaica.jpg" alt="" onerror="this.remove()"><span class="sector-nombre">Fotovoltaica</span><span class="sector-n"></span></button>
+    <button class="sector" data-sector="Alumbrado público e iluminación"><img src="img/fotos/alumbrado.jpg" alt="" onerror="this.remove()"><span class="sector-nombre">Alumbrado</span><span class="sector-n"></span></button>
+    <button class="sector" data-sector="Instalaciones eléctricas, media y baja tensión"><img src="img/fotos/electricas.jpg" alt="" onerror="this.remove()"><span class="sector-nombre">Instalaciones eléctricas</span><span class="sector-n"></span></button>
+    <button class="sector" data-sector="Movilidad eléctrica y puntos de recarga"><img src="img/fotos/recarga.jpg" alt="" onerror="this.remove()"><span class="sector-nombre">Puntos de recarga</span><span class="sector-n"></span></button>
   </section>
 
   <section class="filtros" aria-label="Filtros">
@@ -124,6 +135,7 @@
 </main>
 
 <footer class="pie">
+  <p class="creditos" id="creditos"></p>
   <p>Datos: Plataforma de Contratación del Sector Público, reutilizados conforme a la Ley 37/2007. Este servicio no es oficial ni está vinculado a la Administración.</p>
   <nav aria-label="Legal"><a href="legal.html#aviso">Aviso legal</a><a href="legal.html#privacidad">Privacidad</a><a href="legal.html#condiciones">Condiciones de contratación</a><a href="legal.html#cookies">Cookies</a></nav>
   <button id="instalar" class="boton boton-secundario" hidden>Instalar en el móvil</button>

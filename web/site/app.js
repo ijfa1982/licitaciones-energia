@@ -16,6 +16,11 @@
     return Math.round((new Date(iso + "T00:00:00") - hoy) / 86400000);
   };
   const importeDe = (r) => r.presupuestoSinIva ?? r.valorEstimado ?? null;
+  const PROV = window.PROVINCIAS || {};
+  const provinciaDe = (r) => r.provincia || PROV[(r.codigoNuts || "").slice(0, 5)] || "";
+  const capitalizar = (t) => t.toLocaleLowerCase("es").replace(/(^|[\s\-\/(])(\p{L})/gu, (m, a, b) => a + b.toLocaleUpperCase("es"))
+    .replace(/\b(De|Del|La|Las|Los|El|Y|I|D')\b/g, (m, x, off) => (off ? x.toLowerCase() : x));
+  const municipioDe = (r) => { const t = (r.municipio || "").trim(); return t && t === t.toUpperCase() ? capitalizar(t) : t; };
 
   function enlacesPlanes() {
     document.querySelectorAll("[data-plan]").forEach((a) => {
@@ -40,11 +45,17 @@
     const texto = quitarTildes($("f-texto").value.trim());
     const sector = $("f-sector").value;
     const comunidad = $("f-comunidad").value;
+    const tipo = $("f-tipo").value;
+    const provincia = $("f-provincia").value;
+    const municipio = $("f-municipio").value;
     const minimo = Number($("f-importe").value) || 0;
     const orden = $("f-orden").value;
     const lista = datos.abiertas.filter((r) => {
       if (sector && !(r.sectores || []).includes(sector)) return false;
       if (comunidad && r.comunidadAutonoma !== comunidad) return false;
+      if (tipo && r.tipoContrato !== tipo) return false;
+      if (provincia && provinciaDe(r) !== provincia) return false;
+      if (municipio && municipioDe(r) !== municipio) return false;
       if (minimo && !(importeDe(r) >= minimo)) return false;
       if (texto && !quitarTildes(`${r.titulo} ${r.organoContratacion} ${r.municipio}`).includes(texto)) return false;
       return true;
@@ -128,9 +139,97 @@
     $("actualizado").innerHTML = `Actualizado el <b>${fechaHora.format(new Date(datos.actualizado))}</b>${datos.nuevasHoy ? ` · ${datos.nuevasHoy} nuevas desde ayer` : ""}.`;
     rellenarSelect($("f-sector"), datos.abiertas.flatMap((r) => r.sectores || []));
     rellenarSelect($("f-comunidad"), datos.abiertas.map((r) => r.comunidadAutonoma));
+    rellenarSelect($("f-tipo"), datos.abiertas.map((r) => r.tipoContrato));
+    encadenar();
     pintar();
     pintarSectores();
+    pintarMapa();
     pintarRanking();
+  }
+
+  function opciones(sel, valores, todos) {
+    const actual = sel.value;
+    sel.replaceChildren(new Option(todos, ""));
+    rellenarSelect(sel, valores);
+    sel.value = [...sel.options].some((o) => o.value === actual) ? actual : "";
+  }
+  function encadenar() {
+    const ca = $("f-comunidad").value;
+    const enCa = datos.abiertas.filter((r) => !ca || r.comunidadAutonoma === ca);
+    opciones($("f-provincia"), enCa.map(provinciaDe), "Todas");
+    const pr = $("f-provincia").value;
+    opciones($("f-municipio"), enCa.filter((r) => !pr || provinciaDe(r) === pr).map(municipioDe), "Todos");
+  }
+
+  const contar = (lista, f) => lista.reduce((m, r) => { const k = f(r); if (k) m[k] = (m[k] || 0) + 1; return m; }, {});
+  function pintarMapa() {
+    const cont = $("teselas");
+    const porCa = contar(datos.abiertas, (r) => r.comunidadAutonoma);
+    const max = Math.max(1, ...Object.values(porCa));
+    const sel = $("f-comunidad").value;
+    cont.replaceChildren();
+    (window.TESELAS || []).forEach(([ca, corto, col, fila, ancho, iso]) => {
+      const n = porCa[ca] || 0;
+      const b = document.createElement("button");
+      b.className = "tesela";
+      b.style.gridColumn = `${col} / span ${ancho}`;
+      b.style.gridRow = String(fila);
+      // Intensidad de 0 a 4 según el número de licitaciones (escala relativa a la comunidad con más).
+      b.dataset.nivel = n === 0 ? 0 : Math.min(4, 1 + Math.floor((n / max) * 3.999));
+      b.setAttribute("aria-pressed", String(sel === ca));
+      b.setAttribute("aria-label", `${ca}: ${n} ${n === 1 ? "licitación abierta" : "licitaciones abiertas"}`);
+      b.innerHTML = `<span class="tesela-n"></span><span class="tesela-nombre" aria-hidden="true"></span><span class="tesela-iso" aria-hidden="true"></span>`;
+      b.children[0].textContent = n;
+      b.children[1].textContent = corto;
+      b.children[2].textContent = iso || corto;
+      b.addEventListener("click", () => {
+        $("f-comunidad").value = sel === ca ? "" : ca;
+        $("f-provincia").value = ""; $("f-municipio").value = "";
+        refrescar();
+      });
+      cont.append(b);
+    });
+    pintarDetalle();
+  }
+  function pintarDetalle() {
+    const d = $("detalle");
+    const ca = $("f-comunidad").value;
+    if (!ca) { d.innerHTML = '<p class="detalle-vacio">Elige una comunidad en el mapa.</p>'; return; }
+    const lista = datos.abiertas.filter((r) => r.comunidadAutonoma === ca);
+    const provs = Object.entries(contar(lista, provinciaDe)).sort((a, b) => b[1] - a[1]);
+    const munis = Object.entries(contar(lista, municipioDe)).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    d.replaceChildren();
+    const h = document.createElement("h3"); h.textContent = `${ca}: ${lista.length} ${lista.length === 1 ? "abierta" : "abiertas"}`; d.append(h);
+    const bloque = (titulo, filas, campo) => {
+      if (!filas.length) return;
+      const t = document.createElement("p"); t.className = "detalle-titulo"; t.textContent = titulo; d.append(t);
+      const ul = document.createElement("ul"); ul.className = "barras";
+      const max = filas[0][1];
+      filas.forEach(([nombre, n]) => {
+        const li = document.createElement("li");
+        const b = document.createElement("button");
+        b.innerHTML = '<span class="barra-nombre"></span><span class="barra-n"></span><span class="barra-fondo"><span class="barra-relleno"></span></span>';
+        b.querySelector(".barra-nombre").textContent = nombre;
+        b.querySelector(".barra-n").textContent = n;
+        b.querySelector(".barra-relleno").style.width = `${(n / max) * 100}%`;
+        b.setAttribute("aria-pressed", String($(campo).value === nombre));
+        b.addEventListener("click", () => {
+          if (campo === "f-provincia") { $("f-provincia").value = $("f-provincia").value === nombre ? "" : nombre; $("f-municipio").value = ""; }
+          else { encadenar(); $("f-municipio").value = $("f-municipio").value === nombre ? "" : nombre; }
+          refrescar();
+        });
+        li.append(b); ul.append(li);
+      });
+      d.append(ul);
+    };
+    bloque("Provincias", provs, "f-provincia");
+    bloque("Municipios con más licitaciones", munis, "f-municipio");
+  }
+  function refrescar() {
+    const muni = $("f-municipio").value;
+    encadenar();
+    if (muni && [...$("f-municipio").options].some((o) => o.value === muni)) $("f-municipio").value = muni;
+    visibles = POR_PAGINA; pintar(); pintarSectores(); pintarMapa();
   }
 
   function pintarSectores() {
@@ -144,7 +243,7 @@
     const sel = $("f-sector");
     if (![...sel.options].some((o) => o.value === b.dataset.sector)) sel.add(new Option(b.dataset.sector, b.dataset.sector));
     sel.value = sel.value === b.dataset.sector ? "" : b.dataset.sector;
-    visibles = POR_PAGINA; pintar(); pintarSectores();
+    visibles = POR_PAGINA; pintar(); pintarSectores(); pintarMapa();
     $("lista").scrollIntoView({ behavior: "smooth" });
   }));
 
@@ -164,8 +263,10 @@
     } catch (e) { /* sin créditos si no hay fotos */ }
   }
 
-  ["f-texto", "f-sector", "f-comunidad", "f-importe", "f-orden"].forEach((id) =>
-    $(id).addEventListener("input", () => { visibles = POR_PAGINA; pintar(); pintarSectores(); }));
+  ["f-texto", "f-sector", "f-tipo", "f-importe", "f-orden", "f-municipio"].forEach((id) =>
+    $(id).addEventListener("input", () => { visibles = POR_PAGINA; pintar(); pintarSectores(); pintarDetalle(); }));
+  $("f-comunidad").addEventListener("input", () => { $("f-provincia").value = ""; $("f-municipio").value = ""; refrescar(); });
+  $("f-provincia").addEventListener("input", () => { $("f-municipio").value = ""; refrescar(); });
   $("mas").addEventListener("click", () => { visibles += POR_PAGINA; pintar(); });
 
   let aviso;

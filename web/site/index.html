@@ -45,13 +45,29 @@
     <button class="sector" data-sector="Movilidad eléctrica y puntos de recarga"><img src="img/fotos/recarga.jpg" alt="" onerror="this.remove()"><span class="sector-nombre">Puntos de recarga</span><span class="sector-n"></span></button>
   </section>
 
+  <section class="mapa" id="mapa" aria-labelledby="mapa-titulo">
+    <div class="mapa-cabecera">
+      <h2 id="mapa-titulo">Dónde hay licitaciones abiertas</h2>
+      <p class="nota">Pulsa una comunidad para ver sus provincias y municipios y filtrar el listado.</p>
+    </div>
+    <div class="mapa-cuerpo">
+      <div class="teselas" id="teselas" role="group" aria-label="Comunidades autónomas"></div>
+      <aside class="detalle" id="detalle" aria-live="polite">
+        <p class="detalle-vacio">Elige una comunidad en el mapa.</p>
+      </aside>
+    </div>
+  </section>
+
   <section class="filtros" aria-label="Filtros">
     <label class="campo campo-texto">
       <span>Buscar</span>
       <input id="f-texto" type="search" placeholder="Colegio, LED, aerotermia, Ayuntamiento de…">
     </label>
     <label class="campo"><span>Sector</span><select id="f-sector"><option value="">Todos</option></select></label>
+    <label class="campo"><span>Tipo de contrato</span><select id="f-tipo"><option value="">Todos</option></select></label>
     <label class="campo"><span>Comunidad</span><select id="f-comunidad"><option value="">Todas</option></select></label>
+    <label class="campo"><span>Provincia</span><select id="f-provincia"><option value="">Todas</option></select></label>
+    <label class="campo"><span>Municipio</span><select id="f-municipio"><option value="">Todos</option></select></label>
     <label class="campo"><span>Importe mínimo</span>
       <select id="f-importe">
         <option value="0">Cualquiera</option><option value="15000">15.000 €</option><option value="50000">50.000 €</option>
@@ -154,6 +170,7 @@
     </div>
   </li>
 </template>
+<script src="provincias.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -36,6 +36,7 @@ def ejecutar(cfg, ahora=AHORA, **kw):
             max_resultados=kw.get("max_resultados", 1000), ahora=ahora,
             vistos_previos=kw.get("vistos_previos"),
             segundos_restantes=kw.get("segundos_restantes", lambda: None),
+            cupo_restante=kw.get("cupo_restante", lambda: None),
         )
     )
     return guardados, total, vistos, logs
@@ -170,6 +171,39 @@ class TestRecorrido(unittest.TestCase):
         guardados, total, _, logs = ejecutar(Config(), segundos_restantes=lambda: next(restantes))
         self.assertEqual([g["expediente"] for g in guardados], ["EXP-1", "EXP-2", "EXP-6"])
         self.assertTrue(any("límite de tiempo" in l for l in logs))
+
+    def test_respeta_gasto_maximo(self):
+        # El cliente solo puede pagar 2 licitaciones: se entregan 2, se para y las demás no quedan como vistas.
+        entregadas = []
+
+        def cupo():
+            return 2 - len(entregadas)
+
+        guardados, total, vistos, logs = [], 0, {}, []
+
+        async def guardar(lote):
+            entregadas.extend(lote)
+
+        actor_main.ESPERA_ENTRE_PAGINAS = 0
+        total, vistos = asyncio.run(
+            actor_main.recorrer(
+                [actor_main.FEED_LICITACIONES], Config(), fetch=fetch_falso, guardar=guardar,
+                log=logs.append, max_paginas=10, dias_atras=2, max_resultados=1000, ahora=AHORA,
+                vistos_previos={}, cupo_restante=cupo,
+            )
+        )
+        self.assertEqual(total, 2)
+        self.assertEqual([g["expediente"] for g in entregadas], ["EXP-1", "EXP-2"])
+        self.assertTrue(all("_clave" not in g for g in entregadas))
+        self.assertTrue(any("gasto máximo" in l for l in logs))
+        # Las no entregadas se ofrecerán en la siguiente ejecución.
+        siguiente, total2, _, _ = ejecutar(Config(), vistos_previos=vistos)
+        self.assertEqual([g["expediente"] for g in siguiente], ["EXP-6", "EXP-7"])
+
+    def test_sin_limite_de_gasto(self):
+        guardados, total, _, _ = ejecutar(Config(), cupo_restante=lambda: None)
+        self.assertEqual(total, 4)
+        self.assertTrue(all("_clave" not in g for g in guardados))
 
     def test_url_no_oficial(self):
         self.assertFalse(actor_main.url_oficial("https://ejemplo.com/feed.atom"))

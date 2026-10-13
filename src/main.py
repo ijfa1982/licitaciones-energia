@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import gzip
+import math
 import os
 import time
 import urllib.request
@@ -23,6 +24,7 @@ ESPERA_ENTRE_PAGINAS = 1.0  # segundos, para no cargar el servidor público
 CLAVE_ESTADO = "VISTOS"
 MADRID = ZoneInfo("Europe/Madrid")
 MARGEN_SEGUNDOS = 45  # tiempo reservado para guardar el estado y terminar ordenadamente
+EVENTO_RESULTADO = "apify-default-dataset-item"  # evento de pago por cada licitación entregada
 
 
 def segundos_hasta_timeout() -> Optional[float]:
@@ -34,6 +36,20 @@ def segundos_hasta_timeout() -> Optional[float]:
     if fin.tzinfo is None:
         fin = fin.replace(tzinfo=timezone.utc)
     return (fin - datetime.now(timezone.utc)).total_seconds()
+
+
+def cupo_de_pago() -> Optional[int]:
+    """Licitaciones que aún caben en el gasto máximo que el cliente fijó para esta ejecución.
+
+    None si no hay límite o el SDK no lo puede calcular (por ejemplo, al probar en local).
+    """
+    try:
+        n = Actor.get_charging_manager().calculate_max_event_charge_count_within_limit(EVENTO_RESULTADO)
+    except Exception:  # noqa: BLE001
+        return None
+    if n is None or (isinstance(n, float) and math.isinf(n)):
+        return None
+    return max(int(n), 0)
 
 
 def url_oficial(url: str) -> bool:
@@ -74,6 +90,7 @@ async def recorrer(
     ahora: datetime,
     vistos_previos: Optional[dict] = None,
     segundos_restantes: Callable[[], Optional[float]] = lambda: None,
+    cupo_restante: Callable[[], Optional[int]] = lambda: None,
 ) -> tuple[int, dict]:
     """Recorre las páginas de cada feed (de más reciente a más antigua) y guarda las coincidencias.
 
@@ -84,10 +101,11 @@ async def recorrer(
     vistos: dict = dict(vistos_previos or {})
     total = 0
     sin_tiempo = False
+    sin_cupo = False
     duracion_pagina = 30.0  # estimación inicial; se ajusta con la última página leída
 
     for feed in feeds:
-        if sin_tiempo:
+        if sin_tiempo or sin_cupo:
             break
         url: Optional[str] = feed
         paginas = 0
@@ -157,12 +175,23 @@ async def recorrer(
                     descartes["ya entregada"] += 1
                     continue
                 vistos[clave] = rec.get("actualizado")
+                salida["_clave"] = clave
                 salida["fuente"] = "Plataforma de Contratación del Sector Público"
                 salida["obtenidoEn"] = ahora.isoformat(timespec="seconds")
                 lote.append(salida)
                 if total + len(lote) >= max_resultados:
                     break
 
+            cupo = cupo_restante()
+            if cupo is not None and len(lote) > cupo:
+                # No se entregan (ni se cobran) más licitaciones de las que permite el gasto máximo del cliente.
+                for rec in lote[cupo:]:
+                    clave = rec.get("expediente")
+                    vistos.pop(rec.pop("_clave", clave), None)
+                lote = lote[:cupo]
+                sin_cupo = True
+            for rec in lote:
+                rec.pop("_clave", None)
             if lote:
                 await guardar(lote)
                 total += len(lote)
@@ -175,6 +204,14 @@ async def recorrer(
                 f"Página {paginas} de {nombre_feed}: {len(registros)} entradas ({rango}), "
                 f"{len(lote)} coincidencias (total {total}). Descartes: {resumen_descartes}."
             )
+
+            if sin_cupo or (cupo_restante() == 0):
+                log(
+                    f"Se ha alcanzado el gasto máximo por ejecución que has fijado: se termina con "
+                    f"{total} resultados. Para recibir más, sube el límite (Max charge) en las opciones."
+                )
+                sin_cupo = True
+                break
 
             # Se para cuando TODA la página es anterior al periodo pedido (no se asume orden dentro de la página).
             if fechas and max(fechas) < limite:
@@ -217,6 +254,7 @@ async def main() -> None:
             ahora=datetime.now(timezone.utc),
             vistos_previos=vistos_previos,
             segundos_restantes=segundos_hasta_timeout,
+            cupo_restante=cupo_de_pago,
         )
 
         if almacen is not None:

@@ -24,11 +24,14 @@ SECTORES = {
     },
     "alumbrado": {
         "nombre": "Alumbrado público e iluminación",
-        "cpv": ["315", "349285", "453161", "502321", "50232"],
+        # 50232000 general y 502321 alumbrado; fuera 502322 (semáforos y señalización).
+        "cpv": ["315", "349285", "453161", "502321", "50232000", "50232110"],
         "palabras": [
             "alumbrado", "luminaria", "tecnologia led", "led", "iluminacion publica",
             "iluminacion exterior", "iluminacion eficiente", "iluminacion vial",
         ],
+        # Contratos de suministro eléctrico que citan el alumbrado como punto de consumo: son de suministro.
+        "excluir": ["energia electrica", "suministro electrico", "suministro de electricidad"],
     },
     "climatizacion": {
         "nombre": "Climatización, calefacción y bombas de calor",
@@ -95,6 +98,8 @@ SECTORES_POR_DEFECTO = [k for k in SECTORES if k != "vehiculos_electricos"]
 EXCLUSIONES_TITULO = [
     "sonido", "carroza", "carrozas", "espectaculo", "espectacular", "festejos", "fiestas",
     "iluminacion artistica", "escenario", "escenografia", "evento", "eventos", "musical",
+    "navideno", "navidena", "navidad", "alumbrado extraordinario",
+    "pantalla", "pantallas", "videowall", "videomarcador", "tira led",
 ]
 
 # Estado del expediente (ContractFolderStatusCode)

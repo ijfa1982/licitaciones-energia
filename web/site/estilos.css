@@ -228,3 +228,11 @@ td small { display: block; color: var(--acero); }
 .leyenda i { width: 26px; height: 10px; display: inline-block; }
 .leyenda i[data-nivel="1"] { background: #C9CED4; } .leyenda i[data-nivel="2"] { background: #8F98A3; }
 .leyenda i[data-nivel="3"] { background: #56606B; } .leyenda i[data-nivel="4"] { background: var(--grafito); }
+
+.ciudad { cursor: pointer; }
+.ciudad circle { fill: var(--chapa); stroke: var(--grafito); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.ciudad circle[data-nivel="1"] { fill: #C9CED4; } .ciudad circle[data-nivel="2"] { fill: #8F98A3; }
+.ciudad circle[data-nivel="3"] { fill: #56606B; } .ciudad circle[data-nivel="4"] { fill: var(--grafito); }
+.ciudad:hover circle { fill: var(--senal); }
+.ciudad text { font-family: var(--display); font-weight: 700; fill: var(--grafito); }
+@media (max-width: 860px) { .detalle.vacio { display: none; } }

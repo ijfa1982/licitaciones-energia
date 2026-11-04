@@ -224,9 +224,27 @@
       p.addEventListener("click", accion);
       p.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); accion(); } });
       svg.append(p);
+      if (!ca && (c.nombre === "Ceuta" || c.nombre === "Melilla")) {
+        // Son demasiado pequeñas para verse y pulsarse: se marcan con un punto y su nombre.
+        const g = document.createElementNS(NS, "g");
+        g.setAttribute("class", "ciudad");
+        const punto = document.createElementNS(NS, "circle");
+        punto.setAttribute("cx", c.c[0]); punto.setAttribute("cy", c.c[1]); punto.setAttribute("r", 9 * escalaTexto);
+        punto.dataset.nivel = nivel(c.n, max);
+        const et = document.createElementNS(NS, "text");
+        et.setAttribute("x", c.c[0] + (c.nombre === "Ceuta" ? -14 : 14) * escalaTexto);
+        et.setAttribute("y", c.c[1] + 24 * escalaTexto);
+        et.setAttribute("text-anchor", c.nombre === "Ceuta" ? "end" : "start");
+        et.setAttribute("font-size", 20 * escalaTexto);
+        et.textContent = `${c.nombre} ${c.n}`;
+        g.append(punto, et);
+        g.addEventListener("click", accion);
+        svg.append(g);
+        c.sinCifra = true;
+      }
     });
     capa.forEach((c) => {
-      if (!c.n) return;
+      if (!c.n || c.sinCifra) return;
       const t = document.createElementNS(NS, "text");
       t.setAttribute("x", c.c[0]); t.setAttribute("y", c.c[1]);
       t.setAttribute("class", "cifra");
@@ -284,6 +302,7 @@
   function pintarDetalle() {
     const d = $("detalle");
     const ca = $("f-comunidad").value;
+    d.classList.toggle("vacio", !ca);
     if (!ca) { d.innerHTML = '<p class="detalle-vacio">Elige una comunidad en el mapa.</p>'; return; }
     const lista = datos.abiertas.filter((r) => r.comunidadAutonoma === ca);
     const provs = Object.entries(contar(lista, provinciaDe)).sort((a, b) => b[1] - a[1]);

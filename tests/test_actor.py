@@ -227,6 +227,12 @@ class TestCasosReales(unittest.TestCase):
         ("Obras de adecuación de edificio para centro social integrado", ["45000000", "45331000"], True),
         # La compra de vehículos eléctricos es un sector opcional, fuera por defecto
         ("Suministro de un vehículo industrial nuevo, motorización eléctrica", ["34100000", "34144900"], False),
+        # Ruido de alumbrado visto en noviembre de 2026
+        ("Suministro de una pantalla LED de gran formato, apta para su utilización en espacios exteriores", ["32351200"], False),
+        ("Suministro de tira led", ["31680000"], False),
+        ("Suministro, instalación, mantenimiento y desmontaje del alumbrado ornamental navideño", ["31527260"], False),
+        ("Servicio de mantenimiento y conservación integral de la señalización de las vías públicas", ["50232200"], False),
+        ("Renovación y mejora de la eficiencia energética del alumbrado público exterior", ["45000000", "34928510"], True),
         # Falsos positivos de la primera versión
         ("Contrato de servicios de limpieza del Centro Tecnológico", ["90910000", "50730000", "90911000"], False),
         ("Suministro de materiales de ferretería y otros",
@@ -317,3 +323,13 @@ class TestMain(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSuministroNoEsAlumbrado(unittest.TestCase):
+    def test_suministro_con_alumbrado_en_titulo(self):
+        from src.filtros import clasificar
+        rec = {"titulo": "Suministro de energía eléctrica para las dependencias municipales y el alumbrado público",
+               "cpv": ["09310000"]}
+        sectores, _, _ = clasificar(rec, Config())
+        self.assertIn("suministro_energia", sectores)
+        self.assertNotIn("alumbrado", sectores)

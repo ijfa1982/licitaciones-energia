@@ -81,6 +81,8 @@ def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str], str]:
 
     for clave in cfg.sectores:
         sector = SECTORES[clave]
+        if any(_contiene(titulo_norm, p) for p in sector.get("excluir", [])):
+            continue
         cpv_hit = None
         if cpv_valido:
             cpv_hit = next((c for c in cpvs if _es_cpv_energetico(c, sector["cpv"])), None)

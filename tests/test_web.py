@@ -46,13 +46,21 @@ class TestWeb(unittest.TestCase):
         if adj:
             self.assertGreaterEqual(rank[0]["contratos"], 1)
 
+    def test_reclasifica_lo_guardado(self):
+        previos = {"abiertas": [
+            {"id": "a", "titulo": "Suministro de tira led", "cpv": ["31680000"], "estado": "PUB", "fechaLimite": "2026-12-01"},
+            {"id": "b", "titulo": "Renovación del alumbrado público", "cpv": ["45316110"], "estado": "PUB", "fechaLimite": "2026-12-01"},
+        ]}
+        ab, _, _ = generar_datos.combinar(previos, [], HOY)
+        self.assertEqual([r["id"] for r in ab], ["b"])
+
     def test_vencidas_salen(self):
-        previos = {"abiertas": [{"id": "x", "titulo": "Vieja", "estado": "PUB", "fechaLimite": "2026-01-01"}]}
+        previos = {"abiertas": [{"id": "x", "titulo": "Alumbrado viejo", "cpv": ["45316110"], "estado": "PUB", "fechaLimite": "2026-01-01"}]}
         ab, _, _ = generar_datos.combinar(previos, [], HOY)
         self.assertEqual(ab, [])
 
     def test_adjudicada_sale_de_abiertas(self):
-        previos = {"abiertas": [{"id": "x", "titulo": "A", "estado": "PUB", "fechaLimite": "2026-12-01"}]}
+        previos = {"abiertas": [{"id": "x", "titulo": "Alumbrado A", "cpv": ["45316110"], "estado": "PUB", "fechaLimite": "2026-12-01"}]}
         rec = {"id": "x", "titulo": "A", "estado": "ADJ", "actualizado": "2026-10-07T10:00:00+02:00",
                "adjudicatarios": [{"nombre": "Solar SL", "nif": "B12345678", "importeSinIva": 1000}]}
         ab, adj, _ = generar_datos.combinar(previos, [rec], HOY)

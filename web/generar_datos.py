@@ -18,7 +18,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from src.catalogo import FEED_LICITACIONES
-from src.filtros import Config, dias_restantes
+from src.catalogo import SECTORES
+from src.filtros import Config, clasificar, dias_restantes
 from src.main import MADRID, descargar, recorrer
 from src.parser import parse_iso
 
@@ -46,10 +47,22 @@ def _recortar(rec: dict) -> dict:
     return {k: rec.get(k) for k in CAMPOS_LICITACION}
 
 
+def reclasificar(lista: list[dict]) -> list[dict]:
+    """Vuelve a clasificar lo guardado con el filtro actual, para que una mejora del filtro se note ya."""
+    cfg = Config()
+    salida = []
+    for r in lista:
+        sectores, _, relevancia = clasificar(r, cfg)
+        if sectores:
+            salida.append({**r, "sectores": [SECTORES[s]["nombre"] if s in SECTORES else s for s in sectores],
+                           "relevancia": relevancia})
+    return salida
+
+
 def combinar(previos: dict, nuevos: list[dict], hoy) -> tuple[list[dict], list[dict], list[dict]]:
     """Mezcla los datos previos con lo leído hoy. Devuelve (abiertas, adjudicaciones, nuevas_hoy)."""
-    abiertas = {r["id"]: r for r in previos.get("abiertas", [])}
-    adjudicaciones = {r["id"]: r for r in previos.get("adjudicaciones", [])}
+    abiertas = {r["id"]: r for r in reclasificar(previos.get("abiertas", []))}
+    adjudicaciones = {r["id"]: r for r in reclasificar(previos.get("adjudicaciones", []))}
     conocidas = set(abiertas) | set(adjudicaciones)
     nuevas_hoy = []
 

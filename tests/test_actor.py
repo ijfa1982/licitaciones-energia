@@ -225,6 +225,9 @@ class TestCasosReales(unittest.TestCase):
         ("Suministro de pellet para las calderas de biomasa de la piscina cubierta municipal", ["09111400"], True),
         ("Sustitución de reguladores para el alumbrado aeronáutico de superficie", ["31224600"], True),
         ("Obras de adecuación de edificio para centro social integrado", ["45000000", "45331000"], True),
+        # CPV secundario genérico de iluminación sin energía en el título (visto en noviembre de 2026)
+        ("Suministro material aislamiento Juan Carlos I. 2 Lotes.", ["42000000", "31500000"], False),
+        ("Suministro de luminarias para el polideportivo", ["39000000", "31500000"], True),
         # La compra de vehículos eléctricos es un sector opcional, fuera por defecto
         ("Suministro de un vehículo industrial nuevo, motorización eléctrica", ["34100000", "34144900"], False),
         # Ruido de alumbrado visto en noviembre de 2026

@@ -83,6 +83,9 @@ Para un aviso diario: crea una **Tarea** con tu configuración, activa *"Solo nu
 - Fuente: [conjunto de datos abiertos de licitaciones](https://www.hacienda.gob.es/es-ES/GobiernoAbierto/Datos%20Abiertos/Paginas/LicitacionesContratante.aspx) de la Plataforma de Contratación del Sector Público (Ministerio de Hacienda), publicado para su reutilización.
 - Cubre los órganos que publican en la Plataforma estatal. Algunas comunidades (por ejemplo, Cataluña, País Vasco o Andalucía) tienen además sus propias plataformas; sus licitaciones solo aparecen si también se agregan a la estatal.
 - La clasificación por sector usa CPV y palabras clave: revisa siempre el pliego antes de presentar una oferta.
+- `importeAdjudicacion` se copia tal cual de la Plataforma. En contratos por precios unitarios o acuerdos marco puede venir como 0 € o una cifra simbólica (por ejemplo, 10 € en un contrato de 500.000 €): consulta el importe real en el anuncio de adjudicación (`urlDetalle`).
+- `comunidadAutonoma` queda vacía cuando el órgano solo indica una zona que abarca varias comunidades (por ejemplo, NUTS `ES1`, "Noroeste"); el código y el texto originales se mantienen en `codigoNuts` y `lugarEjecucion`.
+- Data notes (EN): award amounts are copied as published (unit-price contracts may show 0 or a token value); `comunidadAutonoma` is empty when only a multi-region NUTS code is given.
 
 ## Precio
 

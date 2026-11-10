@@ -95,6 +95,9 @@ SECTORES_POR_DEFECTO = [k for k in SECTORES if k != "vehiculos_electricos"]
 
 # Palabras del título que indican que no es un contrato energético aunque coincida algún código
 # (iluminación y sonido de eventos, carrozas, fiestas...).
+# CPV de material genérico: como CPV secundario solo cuentan si el título también es de energía.
+CPV_DEBILES = ["315"]
+
 EXCLUSIONES_TITULO = [
     "sonido", "carroza", "carrozas", "espectaculo", "espectacular", "festejos", "fiestas",
     "iluminacion artistica", "escenario", "escenografia", "evento", "eventos", "musical",

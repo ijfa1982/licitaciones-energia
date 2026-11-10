@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Optional
 
-from .catalogo import COMUNIDADES, EXCLUSIONES_TITULO, SECTORES, SECTORES_POR_DEFECTO
+from .catalogo import COMUNIDADES, CPV_DEBILES, EXCLUSIONES_TITULO, SECTORES, SECTORES_POR_DEFECTO
 
 
 def normalizar(texto: str) -> str:
@@ -74,7 +74,16 @@ def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str], str]:
         return [], [], ""
 
     todos_prefijos = [p for clave in cfg.sectores for p in SECTORES[clave]["cpv"]] + cfg.cpv_extra
-    energeticos = [c for c in cpvs if _es_cpv_energetico(c, todos_prefijos)]
+    titulo_energetico = cfg.usar_palabras_clave and any(
+        _contiene(titulo_norm, p) for clave in cfg.sectores for p in SECTORES[clave]["palabras"]
+    )
+    # Los CPV "débiles" (material genérico como 315 iluminación) solo cuentan como CPV secundario si el
+    # título también habla de energía: evita, p. ej., "material de aislamiento" para un buque.
+    energeticos = [
+        c for i, c in enumerate(cpvs)
+        if _es_cpv_energetico(c, todos_prefijos)
+        and (i == 0 or titulo_energetico or not _es_cpv_energetico(c, CPV_DEBILES))
+    ]
     principal_energetico = bool(cpvs) and cpvs[0] in energeticos
     cpv_valido = principal_energetico or (bool(cpvs) and len(energeticos) * 2 >= len(cpvs))
     por_titulo = False
@@ -85,7 +94,7 @@ def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str], str]:
             continue
         cpv_hit = None
         if cpv_valido:
-            cpv_hit = next((c for c in cpvs if _es_cpv_energetico(c, sector["cpv"])), None)
+            cpv_hit = next((c for c in energeticos if _es_cpv_energetico(c, sector["cpv"])), None)
         if cpv_hit:
             sectores.append(clave)
             motivos.append(f"CPV {cpv_hit}")

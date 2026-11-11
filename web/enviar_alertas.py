@@ -136,7 +136,11 @@ def main() -> None:
 
     contexto = ssl.create_default_context()
     with smtplib.SMTP_SSL(os.environ["SMTP_HOST"], int(os.environ.get("SMTP_PORT", "465")), context=contexto) as srv:
-        srv.login(os.environ["SMTP_USER"], os.environ["SMTP_PASS"])
+        usuario, clave = os.environ["SMTP_USER"].strip(), os.environ["SMTP_PASS"].strip()
+        if not (usuario.isascii() and clave.isascii()):
+            raise SystemExit("SMTP_USER o SMTP_PASS tiene caracteres no válidos (tildes, ª, º...): "
+                             "vuelve a pegarlos copiándolos del CSV de SES.")
+        srv.login(usuario, clave)
         for m in mensajes:
             srv.send_message(m)
     print(f"Enviados {len(mensajes)} correos a {len(suscriptores)} suscriptores.")

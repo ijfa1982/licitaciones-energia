@@ -42,6 +42,7 @@ jobs:
         run: python -m web.fotos
       - name: Enviar alertas a los suscriptores
         if: ${{ env.HAY_SUSCRIPTORES == 'true' }}
+        continue-on-error: true   # un fallo de correo no debe impedir actualizar la web
         env:
           SUSCRIPTORES: ${{ secrets.SUSCRIPTORES }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}

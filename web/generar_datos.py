@@ -28,6 +28,7 @@ from src.parser import parse_iso
 
 DIAS_ADJUDICACIONES = 120   # histórico para el ranking de empresas
 DIAS_PRIMERA_VEZ = 10       # cuánto se lee la primera vez, sin datos previos
+TIEMPO_MAXIMO_LECTURA = 45 * 60  # segundos; si la Plataforma va lenta se para y publica lo leído
 CAMPOS_LICITACION = [
     "id", "expediente", "titulo", "estado", "organoContratacion", "comunidadAutonoma", "codigoNuts",
     "municipio", "tipoContrato", "procedimiento", "presupuestoSinIva", "valorEstimado", "fechaLimite",
@@ -143,8 +144,11 @@ async def leer_feed(desde_dias: int, ahora: datetime, log=print, sectores: Optio
     async def guardar(lote):
         leidos.extend(lote)
 
+    import time
+    fin = time.monotonic() + TIEMPO_MAXIMO_LECTURA
     await recorrer([FEED_LICITACIONES], cfg, fetch=descargar, guardar=guardar, log=log,
-                   max_paginas=150, dias_atras=desde_dias, max_resultados=100000, ahora=ahora)
+                   max_paginas=150, dias_atras=desde_dias, max_resultados=100000, ahora=ahora,
+                   segundos_restantes=lambda: fin - time.monotonic())
     return leidos
 
 

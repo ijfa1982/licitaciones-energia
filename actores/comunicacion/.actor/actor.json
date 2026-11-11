@@ -1,0 +1,24 @@
+{
+  "actorSpecification": 1,
+  "name": "licitaciones-comunicacion-eventos-espana",
+  "title": "Licitaciones de comunicación, publicidad y eventos en España (PLACSP)",
+  "description": "Licitaciones públicas de publicidad y marketing, organización de eventos, ferias y congresos, comunicación y relaciones públicas, diseño gráfico y producción audiovisual en España. Datos oficiales de la Plataforma de Contratación del Sector Público, filtrados por área, comunidad autónoma, importe y plazo.",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerContextDir": "../../..",
+  "dockerfile": "../../../Dockerfile",
+  "input": "./input_schema.json",
+  "storages": {
+    "dataset": "./dataset_schema.json"
+  },
+  "output": "./output_schema.json",
+  "environmentVariables": {
+    "SECTORES_POR_DEFECTO": "comunicacion_eventos",
+    "TEMA_LICITACIONES": "de comunicación y eventos"
+  },
+  "defaultRunOptions": {
+    "build": "latest",
+    "timeoutSecs": 1800,
+    "memoryMbytes": 256
+  }
+}

@@ -1,6 +1,7 @@
 """Clasificación por sector energético y filtros de la búsqueda."""
 from __future__ import annotations
 
+import os
 import re
 import unicodedata
 from dataclasses import dataclass, field
@@ -37,7 +38,10 @@ class Config:
 
     @classmethod
     def desde_input(cls, data: dict) -> "Config":
-        pedidos = [x for s in (data.get("sectores") or []) for x in GRUPOS.get(s, [s])]
+        # Sin sectores elegidos: los del Actor (variable SECTORES_POR_DEFECTO, p. ej. en el de comunicación)
+        # o, si no hay, los de energía.
+        elegidos = data.get("sectores") or [x for x in os.environ.get("SECTORES_POR_DEFECTO", "").split(",") if x]
+        pedidos = [x for s in elegidos for x in GRUPOS.get(s, [s])]
         sectores = list(dict.fromkeys(s for s in pedidos if s in SECTORES))
         return cls(
             sectores=sectores or list(SECTORES_POR_DEFECTO),

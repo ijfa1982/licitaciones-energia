@@ -263,6 +263,7 @@ async def main() -> None:
             vistos = {k: v for k, v in vistos.items() if v and v >= corte[:10]}
             await almacen.set_value(CLAVE_ESTADO, vistos)
 
-        mensaje = f"{total} licitaciones de energía encontradas."
+        tema = os.environ.get("TEMA_LICITACIONES", "de energía")
+        mensaje = f"{total} licitaciones {tema} encontradas."
         Actor.log.info(mensaje)
         await Actor.set_status_message(mensaje)

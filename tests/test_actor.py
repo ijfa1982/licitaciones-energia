@@ -362,3 +362,26 @@ class TestComunicacionEventos(unittest.TestCase):
     def test_no_entra_por_defecto(self):
         from src.filtros import clasificar
         self.assertEqual(clasificar({"titulo": "Organización de eventos culturales", "cpv": ["79952000"]}, Config())[0], [])
+
+
+class TestActorComunicacion(unittest.TestCase):
+    def test_sectores_por_defecto_del_actor(self):
+        import os as _os
+        _os.environ["SECTORES_POR_DEFECTO"] = "comunicacion_eventos"
+        try:
+            cfg = Config.desde_input({})
+        finally:
+            del _os.environ["SECTORES_POR_DEFECTO"]
+        self.assertEqual(cfg.sectores, ["publicidad_marketing", "eventos_ferias", "comunicacion_prensa", "diseno_audiovisual"])
+        self.assertIn("fotovoltaica_autoconsumo", Config.desde_input({}).sectores)
+
+    def test_definicion_del_actor(self):
+        import json as _json
+        raiz = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        base = os.path.join(raiz, "actores", "comunicacion", ".actor")
+        a = _json.load(open(os.path.join(base, "actor.json"), encoding="utf-8"))
+        self.assertTrue(os.path.exists(os.path.normpath(os.path.join(base, a["dockerfile"]))))
+        self.assertTrue(os.path.isdir(os.path.join(os.path.normpath(os.path.join(base, a["dockerContextDir"])), "src")))
+        from src.catalogo import SECTORES
+        enum = _json.load(open(os.path.join(base, "input_schema.json"), encoding="utf-8"))["properties"]["sectores"]["items"]["enum"]
+        self.assertTrue(all(e in SECTORES for e in enum))

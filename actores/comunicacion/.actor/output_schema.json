@@ -1,0 +1,12 @@
+{
+  "actorOutputSchemaVersion": 1,
+  "title": "Licitaciones de comunicación y eventos encontradas",
+  "properties": {
+    "licitaciones": {
+      "type": "string",
+      "title": "Licitaciones",
+      "description": "Licitaciones públicas de publicidad, comunicación, eventos, diseño y audiovisual que cumplen los filtros, con área, órgano de contratación, presupuesto, plazo y enlace a la ficha oficial.",
+      "template": "{{links.apiDefaultDatasetUrl}}/items?view=overview"
+    }
+  }
+}

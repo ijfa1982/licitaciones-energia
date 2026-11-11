@@ -70,8 +70,8 @@ def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str], str]:
     cpvs = rec.get("cpv") or []
     titulo_norm = normalizar(rec.get("titulo") or "")
 
-    if any(_contiene(titulo_norm, p) for p in EXCLUSIONES_TITULO):
-        return [], [], ""
+    # Las exclusiones (eventos, fiestas, pantallas...) solo se aplican a los sectores de energía.
+    excluido = any(_contiene(titulo_norm, p) for p in EXCLUSIONES_TITULO)
 
     todos_prefijos = [p for clave in cfg.sectores for p in SECTORES[clave]["cpv"]] + cfg.cpv_extra
     titulo_energetico = cfg.usar_palabras_clave and any(
@@ -90,6 +90,8 @@ def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str], str]:
 
     for clave in cfg.sectores:
         sector = SECTORES[clave]
+        if excluido and not sector.get("ignora_exclusiones"):
+            continue
         if any(_contiene(titulo_norm, p) for p in sector.get("excluir", [])):
             continue
         cpv_hit = None
@@ -106,11 +108,11 @@ def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str], str]:
                 motivos.append(f'título: "{palabra}"')
                 por_titulo = True
 
-    cpv_extra = next((c for c in cpvs if _es_cpv_energetico(c, cfg.cpv_extra)), None) if cpv_valido else None
+    cpv_extra = next((c for c in cpvs if _es_cpv_energetico(c, cfg.cpv_extra)), None) if cpv_valido and not excluido else None
     if cpv_extra:
         sectores.append("cpv_personalizado")
         motivos.append(f"CPV {cpv_extra}")
-    palabra_extra = next((p for p in cfg.palabras_extra if _contiene(titulo_norm, p)), None)
+    palabra_extra = None if excluido else next((p for p in cfg.palabras_extra if _contiene(titulo_norm, p)), None)
     if palabra_extra:
         sectores.append("palabra_personalizada")
         motivos.append(f'título: "{palabra_extra}"')
@@ -121,6 +123,8 @@ def clasificar(rec: dict, cfg: Config) -> tuple[list[str], list[str], str]:
         por_titulo = any(
             _contiene(titulo_norm, p) for clave in cfg.sectores for p in SECTORES[clave]["palabras"]
         )
+    if not sectores:
+        return [], [], ""
     relevancia = "alta" if (principal_energetico or por_titulo) else "media"
     return sectores, motivos, relevancia
 

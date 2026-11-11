@@ -89,9 +89,26 @@ SECTORES = {
     },
 }
 
+# Sector fuera de la energía, a petición de clientes de comunicación y eventos. No es de energía, así que
+# no se busca por defecto y no le afectan las exclusiones de título (que quitan precisamente los eventos).
+SECTORES["comunicacion_eventos"] = {
+    "nombre": "Comunicación, publicidad y eventos",
+    # 7934 publicidad y marketing, 79413 consultoría de marketing, 79416 relaciones públicas,
+    # 7995 organización de eventos, ferias, congresos y seminarios, 79822 diseño gráfico,
+    # 92111 producción de películas y vídeos.
+    "cpv": ["7934", "79413", "79416", "7995", "79822", "92111"],
+    "palabras": [
+        "publicidad", "publicitari", "campana de comunicacion", "campanas de comunicacion", "marketing",
+        "plan de medios", "comunicacion institucional", "gabinete de prensa", "relaciones publicas",
+        "organizacion de eventos", "organizacion de jornadas", "organizacion de congresos", "congreso",
+        "feria de", "ferias", "diseno grafico", "merchandising", "produccion audiovisual", "video promocional",
+    ],
+    "ignora_exclusiones": True,
+}
+
 # Sectores que se buscan si el usuario no elige ninguno (la compra de vehículos es opcional:
 # interesa a concesionarios, no a instaladores ni empresas de servicios energéticos).
-SECTORES_POR_DEFECTO = [k for k in SECTORES if k != "vehiculos_electricos"]
+SECTORES_POR_DEFECTO = [k for k in SECTORES if k not in ("vehiculos_electricos", "comunicacion_eventos")]
 
 # Palabras del título que indican que no es un contrato energético aunque coincida algún código
 # (iluminación y sonido de eventos, carrozas, fiestas...).

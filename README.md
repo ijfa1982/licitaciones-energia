@@ -15,6 +15,8 @@ Pensado para **instaladores, ingenierías, ESE y comercializadoras** que no tien
 - **Filtros de pyme**: comunidad autónoma, presupuesto mínimo y máximo, contratos menores opcionales.
 - **Datos oficiales**: usa la sindicación ATOM de datos abiertos del Ministerio de Hacienda, sin entrar en páginas web.
 
+- **Fuera de la energía, opcional**: el sector *Comunicación, publicidad y eventos* (campañas, marketing, relaciones públicas, organización de eventos, ferias y congresos, diseño y producción audiovisual) se puede elegir aparte; no entra por defecto.
+
 ## Cómo usarlo
 
 1. Elige los sectores y, si quieres, las comunidades autónomas.

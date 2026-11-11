@@ -20,7 +20,8 @@
           "movilidad_electrica",
           "almacenamiento_renovables",
           "consultoria_energetica",
-          "vehiculos_electricos"
+          "vehiculos_electricos",
+          "comunicacion_eventos"
         ],
         "enumTitles": [
           "Fotovoltaica y autoconsumo",
@@ -32,7 +33,8 @@
           "Movilidad eléctrica y puntos de recarga",
           "Almacenamiento y otras renovables",
           "Ingeniería y consultoría energética",
-          "Compra de vehículos eléctricos (opcional)"
+          "Compra de vehículos eléctricos (opcional)",
+          "Comunicación, publicidad y eventos (opcional, no es energía)"
         ]
       },
       "default": []

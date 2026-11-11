@@ -336,3 +336,29 @@ class TestSuministroNoEsAlumbrado(unittest.TestCase):
         sectores, _, _ = clasificar(rec, Config())
         self.assertIn("suministro_energia", sectores)
         self.assertNotIn("alumbrado", sectores)
+
+
+class TestComunicacionEventos(unittest.TestCase):
+    def cfg(self):
+        return Config(sectores=["comunicacion_eventos"])
+
+    def test_entran(self):
+        from src.filtros import clasificar
+        casos = [
+            ("Servicio de organización de eventos institucionales del Ayuntamiento", ["79952000"]),
+            ("Campaña de publicidad de la Semana de la Movilidad", ["79341400"]),
+            ("Contrato de servicios de relaciones públicas y gabinete de prensa", ["79416000"]),
+            ("Organización de la feria de empleo 2027", ["79956000"]),
+        ]
+        for titulo, cpv in casos:
+            self.assertEqual(clasificar({"titulo": titulo, "cpv": cpv}, self.cfg())[0], ["comunicacion_eventos"], titulo)
+
+    def test_no_entran(self):
+        from src.filtros import clasificar
+        self.assertEqual(clasificar({"titulo": "Limpieza de colegios", "cpv": ["90919200"]}, self.cfg())[0], [])
+        self.assertEqual(clasificar({"titulo": "Mantenimiento de la periferia urbana", "cpv": ["45233000"]}, self.cfg())[0], [])
+
+    def test_no_entra_por_defecto(self):
+        from src.filtros import clasificar
+        self.assertEqual(clasificar({"titulo": "Organización de eventos culturales", "cpv": ["79952000"]}, Config())[0], [])
+

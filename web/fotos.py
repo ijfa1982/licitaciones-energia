@@ -18,14 +18,7 @@ import urllib.request
 API = "https://commons.wikimedia.org/w/api.php"
 UA = "LicitacionesEnergia/1.0 (https://github.com/ijfa1982/licitaciones-energia)"
 
-FOTOS = {
-    # hueco: (archivo en Commons, texto alternativo)
-    "portada": ("Electric_power_transmission.jpg", "Torres y líneas de alta tensión"),
-    "fotovoltaica": ("Solar_Panels.jpg", "Paneles solares fotovoltaicos"),
-    "alumbrado": ("LED_streetlight.JPG", "Farola de alumbrado público LED"),
-    "electricas": ("Outdoor_power_substation.jpg", "Subestación eléctrica con transformadores"),
-    "recarga": ("PV_solar_parking.jpg", "Aparcamiento con marquesina fotovoltaica"),
-}
+# Las fotos de cada web están en web/verticales.py (clave "fotos").
 
 
 def _texto(valor: str) -> str:
@@ -59,10 +52,10 @@ def extraer(datos: dict) -> dict | None:
     return None
 
 
-def main(carpeta: str = "web/site/img/fotos") -> None:
+def descargar_set(fotos: dict, carpeta: str) -> None:
     os.makedirs(carpeta, exist_ok=True)
     creditos = []
-    for hueco, (archivo, alt) in FOTOS.items():
+    for hueco, (archivo, alt) in fotos.items():
         try:
             m = metadatos(archivo)
             if not m or not m["url"]:
@@ -76,6 +69,13 @@ def main(carpeta: str = "web/site/img/fotos") -> None:
             print(f"{hueco}: no se pudo descargar {archivo} ({e})", file=sys.stderr)
     with open(os.path.join(carpeta, "creditos.json"), "w", encoding="utf-8") as f:
         json.dump(creditos, f, ensure_ascii=False, indent=1)
+
+
+def main(base: str = "web/build") -> None:
+    from web.verticales import VERTICALES
+    for clave, v in VERTICALES.items():
+        print(f"Fotos de {clave}:")
+        descargar_set(v["fotos"], os.path.join(base, clave, "fotos"))
 
 
 if __name__ == "__main__":

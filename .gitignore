@@ -5,3 +5,5 @@ storage/
 web/site/data/
 web/privado/
 web/site/img/fotos/
+web/build/
+web/dist/

@@ -6,10 +6,12 @@ Los suscriptores se guardan en el secreto SUSCRIPTORES de GitHub (nunca en el re
    "sectores": ["Fotovoltaica y autoconsumo"], "comunidades": ["Comunidad de Madrid"],
    "presupuestoMinimo": 20000, "palabras": ["colegio"]}
 ]
-"plan" es "pro" o "empresa". Los suscriptores "empresa" reciben además, los lunes, el ranking completo
+"plan" es "pro" o "empresa". "vertical" es la web a la que se suscribió ("energia", por defecto, o
+"comunicacion"; ver web/verticales.py). Los suscriptores "empresa" reciben además, los lunes, el ranking completo
 de empresas adjudicatarias en CSV. Una lista vacía o un filtro ausente significa "todo".
 
-Variables: SMTP_HOST, SMTP_PORT (465), SMTP_USER, SMTP_PASS, REMITENTE, URL_WEB.
+Variables: SMTP_HOST, SMTP_PORT (465), SMTP_USER, SMTP_PASS, REMITENTE.
+Lee web/privado/<vertical>/nuevas_hoy.json y ranking_completo.json.
 Con --prueba no envía nada: escribe los correos en web/privado/correos/.
 """
 from __future__ import annotations
@@ -18,6 +20,8 @@ import argparse
 import csv
 import html
 import io
+import re
+import sys
 import json
 import os
 import smtplib
@@ -97,16 +101,31 @@ def main() -> None:
     if not suscriptores:
         print("Sin suscriptores: no se envía nada.")
         return
-    with open(os.path.join(args.privado, "nuevas_hoy.json"), encoding="utf-8") as f:
-        nuevas = json.load(f)
-    with open(os.path.join(args.privado, "ranking_completo.json"), encoding="utf-8") as f:
-        ranking = json.load(f)
-    url_web = os.environ.get("URL_WEB", "")
-    remitente = os.environ.get("REMITENTE") or os.environ.get("SMTP_USER", "")
+    from web.verticales import VERTICALES, url_vertical
+
+    datos = {}
+    for clave in VERTICALES:
+        carpeta = os.path.join(args.privado, clave)
+        if os.path.exists(os.path.join(carpeta, "nuevas_hoy.json")):
+            with open(os.path.join(carpeta, "nuevas_hoy.json"), encoding="utf-8") as f:
+                nuevas = json.load(f)
+            with open(os.path.join(carpeta, "ranking_completo.json"), encoding="utf-8") as f:
+                datos[clave] = (nuevas, json.load(f))
+    remitente_base = os.environ.get("REMITENTE") or os.environ.get("SMTP_USER", "")
     es_lunes = date.today().weekday() == 0
 
     mensajes = []
     for s in suscriptores:
+        clave = s.get("vertical") or "energia"
+        if clave not in datos:
+            print(f"Suscriptor con vertical desconocida o sin datos: {clave}", file=sys.stderr)
+            continue
+        nuevas, ranking = datos[clave]
+        url_web = url_vertical(clave)
+        tema = VERTICALES[clave]["config"]["tema"]
+        # Mismo buzón, con el nombre de la web a la que está suscrito.
+        remitente = re.sub(r"^[^<]*<", f'{VERTICALES[clave]["config"]["nombre"]} <', remitente_base) \
+            if "<" in remitente_base else remitente_base
         lista = filtrar(nuevas, s)
         adjuntar = s.get("plan") == "empresa" and es_lunes
         if not lista and not adjuntar:
@@ -115,8 +134,8 @@ def main() -> None:
         m["From"] = remitente
         m["To"] = s["email"]
         n = len(lista)
-        m["Subject"] = ((f"{n} licitación de energía nueva para ti" if n == 1 else
-                         f"{n} licitaciones de energía nuevas para ti") if lista
+        m["Subject"] = ((f"{n} licitación {tema} nueva para ti" if n == 1 else
+                         f"{n} licitaciones {tema} nuevas para ti") if lista
                         else "Ranking semanal de empresas adjudicatarias")
         m.set_content(m["Subject"] + ". Abre el correo en HTML para verlas.")
         m.add_alternative(cuerpo_html(s.get("nombre", ""), lista, url_web), subtype="html")

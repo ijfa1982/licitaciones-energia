@@ -33,6 +33,7 @@ class TestWeb(unittest.TestCase):
 
     def test_combinar_y_ranking(self):
         nuevos = self.leer()
+        nuevos = generar_datos.reclasificar(nuevos)
         self.assertTrue(nuevos)
         abiertas, adj, nuevas_hoy = generar_datos.combinar({}, nuevos, HOY)
         self.assertTrue(all(r["estado"] in ("PUB", "PRE") for r in abiertas))
@@ -61,7 +62,7 @@ class TestWeb(unittest.TestCase):
 
     def test_adjudicada_sale_de_abiertas(self):
         previos = {"abiertas": [{"id": "x", "titulo": "Alumbrado A", "cpv": ["45316110"], "estado": "PUB", "fechaLimite": "2026-12-01"}]}
-        rec = {"id": "x", "titulo": "A", "estado": "ADJ", "actualizado": "2026-10-07T10:00:00+02:00",
+        rec = {"id": "x", "titulo": "Alumbrado A", "cpv": ["45316110"], "estado": "ADJ", "actualizado": "2026-10-07T10:00:00+02:00",
                "adjudicatarios": [{"nombre": "Solar SL", "nif": "B12345678", "importeSinIva": 1000}]}
         ab, adj, _ = generar_datos.combinar(previos, [rec], HOY)
         self.assertEqual(ab, [])
@@ -70,9 +71,9 @@ class TestWeb(unittest.TestCase):
 
     def test_main_escribe_ficheros(self):
         with tempfile.TemporaryDirectory() as d:
-            sal, priv = os.path.join(d, "site"), os.path.join(d, "priv")
+            sal, priv = os.path.join(d, "build"), os.path.join(d, "priv")
             argv = sys.argv
-            sys.argv = ["x", "--salida", sal, "--privado", priv]
+            sys.argv = ["x", "--salida", sal, "--privado", priv, "--sin-previos"]
             real_now = generar_datos.datetime
             try:
                 class Fijo(real_now):
@@ -84,11 +85,29 @@ class TestWeb(unittest.TestCase):
             finally:
                 sys.argv = argv
                 generar_datos.datetime = real_now
-            web = json.load(open(os.path.join(sal, "web.json"), encoding="utf-8"))
-            self.assertIn("abiertas", web)
-            self.assertLessEqual(len(web["ranking"]), 10)
-            self.assertTrue(os.path.exists(os.path.join(priv, "ranking_completo.json")))
-            self.assertFalse(os.path.exists(os.path.join(sal, "ranking_completo.json")))
+            for vertical in ("energia", "comunicacion"):
+                web = json.load(open(os.path.join(sal, vertical, "data", "web.json"), encoding="utf-8"))
+                self.assertIn("abiertas", web)
+                self.assertLessEqual(len(web["ranking"]), 10)
+                self.assertTrue(os.path.exists(os.path.join(priv, vertical, "ranking_completo.json")))
+                self.assertFalse(os.path.exists(os.path.join(sal, vertical, "data", "ranking_completo.json")))
+            energia = json.load(open(os.path.join(sal, "energia", "data", "web.json"), encoding="utf-8"))
+            self.assertTrue(energia["abiertas"])
+
+    def test_cada_vertical_solo_sus_sectores(self):
+        nuevos = [
+            {"id": "e", "titulo": "Instalación fotovoltaica en el colegio", "cpv": ["09331200"], "estado": "PUB",
+             "fechaLimite": "2026-12-01"},
+            {"id": "c", "titulo": "Organización de eventos del Ayuntamiento", "cpv": ["79952000"], "estado": "PUB",
+             "fechaLimite": "2026-12-01"},
+        ]
+        from src.catalogo import GRUPOS
+        from src.filtros import Config as Cfg
+        ab_e, _, _ = generar_datos.combinar({}, nuevos, HOY, Cfg())
+        ab_c, _, _ = generar_datos.combinar({}, nuevos, HOY, Cfg(sectores=GRUPOS["comunicacion_eventos"]))
+        self.assertEqual([r["id"] for r in ab_e], ["e"])
+        self.assertEqual([r["id"] for r in ab_c], ["c"])
+        self.assertEqual(ab_c[0]["sectores"], ["Eventos, ferias y congresos"])
 
     def test_filtrar_alertas(self):
         lic = [
@@ -157,3 +176,32 @@ class TestMapa(unittest.TestCase):
         from web import mapa
         topo = {"transform": {"scale": [0.5, 0.5], "translate": [10, 20]}, "arcs": [[[0, 0], [2, 0], [0, 2]]]}
         self.assertEqual(mapa.decodificar_arcos(topo)[0], [(10, 20), (11, 20), (11, 21)])
+
+
+class TestConstruir(unittest.TestCase):
+    def test_webs_por_vertical(self):
+        from web import construir
+        from web.verticales import VERTICALES
+        with tempfile.TemporaryDirectory() as d:
+            build, dist = os.path.join(d, "build"), os.path.join(d, "dist")
+            for clave in VERTICALES:
+                os.makedirs(os.path.join(build, clave, "data"))
+                open(os.path.join(build, clave, "data", "web.json"), "w").write("{}")
+            open(os.path.join(build, "mapa.json"), "w").write("{}")
+            cwd = os.getcwd()
+            os.chdir(RAIZ)
+            try:
+                construir.construir(build, dist)
+            finally:
+                os.chdir(cwd)
+            raiz = open(os.path.join(dist, "index.html"), encoding="utf-8").read()
+            com = open(os.path.join(dist, "comunicacion", "index.html"), encoding="utf-8").read()
+            self.assertIn("Licitaciones de energía abiertas hoy", raiz)
+            self.assertIn("Licitaciones de comunicación y eventos abiertas hoy", com)
+            self.assertIn('data-sector="Eventos, ferias y congresos"', com)
+            self.assertNotIn("Fotovoltaica", com.split('class="sectores"')[1].split("</section>")[0])
+            cfg = open(os.path.join(dist, "comunicacion", "config.js"), encoding="utf-8").read()
+            self.assertIn('tema: "de comunicación y eventos"', cfg)
+            self.assertTrue(os.path.exists(os.path.join(dist, "comunicacion", "data", "mapa.json")))
+            self.assertFalse(os.path.exists(os.path.join(dist, "comunicacion", "comunicacion")))
+

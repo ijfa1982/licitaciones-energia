@@ -1,4 +1,4 @@
-# Actualiza la web de licitaciones cada mañana y envía las alertas a los suscriptores.
+# Actualiza las webs de licitaciones (una por sector) cada mañana y envía las alertas a los suscriptores.
 name: Web y alertas
 
 on:
@@ -35,11 +35,13 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r requirements.txt
       - name: Descargar licitaciones del día
-        run: python -m web.generar_datos --salida web/site/data --privado web/privado --previos "$URL_WEB/data"
+        run: python -m web.generar_datos --salida web/build --privado web/privado
       - name: Generar el mapa de España
         run: python -m web.mapa
       - name: Descargar fotos y créditos (Wikimedia Commons)
         run: python -m web.fotos
+      - name: Montar las webs de cada sector
+        run: python -m web.construir
       - name: Enviar alertas a los suscriptores
         if: ${{ env.HAY_SUSCRIPTORES == 'true' }}
         continue-on-error: true   # un fallo de correo no debe impedir actualizar la web
@@ -54,6 +56,6 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: web/site
+          path: web/dist
       - id: despliegue
         uses: actions/deploy-pages@v4

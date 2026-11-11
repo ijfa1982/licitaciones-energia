@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from datetime import date
 from typing import Optional
 
-from .catalogo import COMUNIDADES, CPV_DEBILES, EXCLUSIONES_TITULO, SECTORES, SECTORES_POR_DEFECTO
+from .catalogo import COMUNIDADES, CPV_DEBILES, EXCLUSIONES_TITULO, GRUPOS, SECTORES, SECTORES_POR_DEFECTO
 
 
 def normalizar(texto: str) -> str:
@@ -37,7 +37,8 @@ class Config:
 
     @classmethod
     def desde_input(cls, data: dict) -> "Config":
-        sectores = [s for s in (data.get("sectores") or []) if s in SECTORES]
+        pedidos = [x for s in (data.get("sectores") or []) for x in GRUPOS.get(s, [s])]
+        sectores = list(dict.fromkeys(s for s in pedidos if s in SECTORES))
         return cls(
             sectores=sectores or list(SECTORES_POR_DEFECTO),
             cpv_extra=[c.strip().rstrip("0") or c.strip() for c in data.get("cpvExtra") or [] if c.strip()],

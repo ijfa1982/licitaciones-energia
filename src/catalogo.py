@@ -89,26 +89,48 @@ SECTORES = {
     },
 }
 
-# Sector fuera de la energía, a petición de clientes de comunicación y eventos. No es de energía, así que
-# no se busca por defecto y no le afectan las exclusiones de título (que quitan precisamente los eventos).
-SECTORES["comunicacion_eventos"] = {
-    "nombre": "Comunicación, publicidad y eventos",
-    # 7934 publicidad y marketing, 79413 consultoría de marketing, 79416 relaciones públicas,
-    # 7995 organización de eventos, ferias, congresos y seminarios, 79822 diseño gráfico,
-    # 92111 producción de películas y vídeos.
-    "cpv": ["7934", "79413", "79416", "7995", "79822", "92111"],
-    "palabras": [
-        "publicidad", "publicitari", "campana de comunicacion", "campanas de comunicacion", "marketing",
-        "plan de medios", "comunicacion institucional", "gabinete de prensa", "relaciones publicas",
-        "organizacion de eventos", "organizacion de jornadas", "organizacion de congresos", "congreso",
-        "feria de", "ferias", "diseno grafico", "merchandising", "produccion audiovisual", "video promocional",
-    ],
-    "ignora_exclusiones": True,
+# Sectores fuera de la energía, a petición de clientes de comunicación y eventos. No se buscan por defecto
+# y no les afectan las exclusiones de título (que quitan precisamente los eventos y espectáculos).
+SECTORES.update({
+    "publicidad_marketing": {
+        "nombre": "Publicidad y marketing",
+        "cpv": ["7934", "79413"],  # publicidad y marketing, consultoría de marketing
+        "palabras": ["publicidad", "publicitari", "campana de comunicacion", "campanas de comunicacion",
+                     "marketing", "plan de medios", "merchandising", "promocion turistica"],
+        "ignora_exclusiones": True,
+    },
+    "eventos_ferias": {
+        "nombre": "Eventos, ferias y congresos",
+        "cpv": ["7995"],  # organización de eventos, ferias, congresos, seminarios y festivales
+        "palabras": ["organizacion de eventos", "organizacion de jornadas", "organizacion de congresos",
+                     "congreso", "feria de", "ferias", "gala de", "actos institucionales"],
+        "ignora_exclusiones": True,
+    },
+    "comunicacion_prensa": {
+        "nombre": "Comunicación y relaciones públicas",
+        "cpv": ["79416"],  # relaciones públicas
+        "palabras": ["relaciones publicas", "gabinete de prensa", "comunicacion institucional",
+                     "comunicacion corporativa", "redes sociales", "community manager"],
+        "ignora_exclusiones": True,
+    },
+    "diseno_audiovisual": {
+        "nombre": "Diseño y producción audiovisual",
+        "cpv": ["79822", "92111"],  # diseño gráfico, producción de películas y vídeos
+        "palabras": ["diseno grafico", "produccion audiovisual", "video promocional", "videos promocionales",
+                     "imagen corporativa", "identidad visual"],
+        "ignora_exclusiones": True,
+    },
+})
+
+# Grupos de sectores que se pueden pedir con un solo nombre (en el Actor y en las webs).
+GRUPOS = {
+    "comunicacion_eventos": ["publicidad_marketing", "eventos_ferias", "comunicacion_prensa", "diseno_audiovisual"],
 }
 
 # Sectores que se buscan si el usuario no elige ninguno (la compra de vehículos es opcional:
 # interesa a concesionarios, no a instaladores ni empresas de servicios energéticos).
-SECTORES_POR_DEFECTO = [k for k in SECTORES if k not in ("vehiculos_electricos", "comunicacion_eventos")]
+SECTORES_POR_DEFECTO = [k for k in SECTORES if k != "vehiculos_electricos"
+                        and not SECTORES[k].get("ignora_exclusiones")]
 
 # Palabras del título que indican que no es un contrato energético aunque coincida algún código
 # (iluminación y sonido de eventos, carrozas, fiestas...).

@@ -4,8 +4,11 @@ Se ejecuta a diario en GitHub Actions. Reutiliza el lector y los filtros del Act
 la web y el Actor clasifican igual. Los datos del día anterior se descargan de la propia web publicada
 para ir acumulando un histórico sin necesidad de base de datos.
 
+Lee el feed una sola vez y reparte lo leído entre las webs de cada sector (web/verticales.py).
+
 Uso:
-    python -m web.generar_datos --salida web/site/data --previos https://usuario.github.io/repo/data
+    python -m web.generar_datos --salida web/build --privado web/privado
+    (deja web/build/<vertical>/data/*.json y web/privado/<vertical>/*.json)
 """
 from __future__ import annotations
 
@@ -47,9 +50,9 @@ def _recortar(rec: dict) -> dict:
     return {k: rec.get(k) for k in CAMPOS_LICITACION}
 
 
-def reclasificar(lista: list[dict]) -> list[dict]:
-    """Vuelve a clasificar lo guardado con el filtro actual, para que una mejora del filtro se note ya."""
-    cfg = Config()
+def reclasificar(lista: list[dict], cfg: Optional[Config] = None) -> list[dict]:
+    """Vuelve a clasificar con el filtro actual (y los sectores de la vertical), descartando lo que no encaja."""
+    cfg = cfg or Config()
     salida = []
     for r in lista:
         sectores, _, relevancia = clasificar(r, cfg)
@@ -59,10 +62,11 @@ def reclasificar(lista: list[dict]) -> list[dict]:
     return salida
 
 
-def combinar(previos: dict, nuevos: list[dict], hoy) -> tuple[list[dict], list[dict], list[dict]]:
+def combinar(previos: dict, nuevos: list[dict], hoy, cfg: Optional[Config] = None) -> tuple[list[dict], list[dict], list[dict]]:
     """Mezcla los datos previos con lo leído hoy. Devuelve (abiertas, adjudicaciones, nuevas_hoy)."""
-    abiertas = {r["id"]: r for r in reclasificar(previos.get("abiertas", []))}
-    adjudicaciones = {r["id"]: r for r in reclasificar(previos.get("adjudicaciones", []))}
+    abiertas = {r["id"]: r for r in reclasificar(previos.get("abiertas", []), cfg)}
+    adjudicaciones = {r["id"]: r for r in reclasificar(previos.get("adjudicaciones", []), cfg)}
+    nuevos = reclasificar(nuevos, cfg)
     conocidas = set(abiertas) | set(adjudicaciones)
     nuevas_hoy = []
 
@@ -130,8 +134,10 @@ def ranking(adjudicaciones: list[dict]) -> list[dict]:
     return salida
 
 
-async def leer_feed(desde_dias: int, ahora: datetime, log=print) -> list[dict]:
+async def leer_feed(desde_dias: int, ahora: datetime, log=print, sectores: Optional[list[str]] = None) -> list[dict]:
     cfg = Config(estados=["PUB", "PRE", "EV", "ADJ", "RES", "ANUL"], excluir_vencidas=False)
+    if sectores:
+        cfg.sectores = list(sectores)
     leidos: list[dict] = []
 
     async def guardar(lote):
@@ -142,47 +148,56 @@ async def leer_feed(desde_dias: int, ahora: datetime, log=print) -> list[dict]:
     return leidos
 
 
-def main() -> None:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--salida", default="web/site/data")
-    ap.add_argument("--previos", default=os.environ.get("DATOS_PREVIOS", ""))
-    ap.add_argument("--privado", default="web/privado", help="carpeta que no se publica (alertas, CSV)")
-    args = ap.parse_args()
-
-    ahora = datetime.now(timezone.utc)
-    hoy = ahora.astimezone(MADRID).date()
-    previos = (_leer_json(f"{args.previos.rstrip('/')}/datos.json") if args.previos else None) or {}
-
-    ultima = parse_iso(previos.get("actualizado")) if previos else None
-    if ultima:
-        # Un día de solape por el retraso con el que la Plataforma publica el feed.
-        dias = max(2, min(DIAS_PRIMERA_VEZ, (ahora - ultima).days + 2))
-    else:
-        dias = DIAS_PRIMERA_VEZ
-    print(f"Leyendo el feed: {dias} días hacia atrás (datos previos: {'sí' if previos else 'no'})")
-
-    nuevos = asyncio.run(leer_feed(dias, ahora))
-    abiertas, adjudicaciones, nuevas_hoy = combinar(previos, nuevos, hoy)
+def guardar_vertical(salida: str, privado: str, ahora: datetime, previos: dict, nuevos: list[dict], hoy,
+                     cfg: Config) -> dict:
+    abiertas, adjudicaciones, nuevas_hoy = combinar(previos, nuevos, hoy, cfg)
     rank = ranking(adjudicaciones)
-
-    os.makedirs(args.salida, exist_ok=True)
+    os.makedirs(salida, exist_ok=True)
+    os.makedirs(privado, exist_ok=True)
     datos = {"actualizado": ahora.isoformat(timespec="seconds"), "abiertas": abiertas,
              "adjudicaciones": adjudicaciones}
-    with open(os.path.join(args.salida, "datos.json"), "w", encoding="utf-8") as f:
-        json.dump(datos, f, ensure_ascii=False, separators=(",", ":"))
     # Lo que carga la web: abiertas completas y solo el top 10 del ranking (el ranking completo es de pago).
     publico = {"actualizado": datos["actualizado"], "abiertas": abiertas,
                "ranking": rank[:10], "empresasRanking": len(rank), "adjudicacionesAnalizadas": len(adjudicaciones),
                "nuevasHoy": len(nuevas_hoy)}
-    with open(os.path.join(args.salida, "web.json"), "w", encoding="utf-8") as f:
-        json.dump(publico, f, ensure_ascii=False, separators=(",", ":"))
-    os.makedirs(args.privado, exist_ok=True)
-    with open(os.path.join(args.privado, "nuevas_hoy.json"), "w", encoding="utf-8") as f:
-        json.dump(nuevas_hoy, f, ensure_ascii=False, separators=(",", ":"))
-    with open(os.path.join(args.privado, "ranking_completo.json"), "w", encoding="utf-8") as f:
-        json.dump(rank, f, ensure_ascii=False, separators=(",", ":"))
-    print(f"Abiertas: {len(abiertas)} · nuevas hoy: {len(nuevas_hoy)} · adjudicaciones: {len(adjudicaciones)}"
-          f" · empresas en ranking: {len(rank)}")
+    for carpeta, nombre, contenido in ((salida, "datos.json", datos), (salida, "web.json", publico),
+                                       (privado, "nuevas_hoy.json", nuevas_hoy),
+                                       (privado, "ranking_completo.json", rank)):
+        with open(os.path.join(carpeta, nombre), "w", encoding="utf-8") as f:
+            json.dump(contenido, f, ensure_ascii=False, separators=(",", ":"))
+    return {"abiertas": len(abiertas), "nuevas": len(nuevas_hoy), "adjudicaciones": len(adjudicaciones),
+            "empresas": len(rank)}
+
+
+def main() -> None:
+    from web.verticales import VERTICALES, url_vertical
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--salida", default="web/build", help="carpeta con una subcarpeta por vertical")
+    ap.add_argument("--privado", default="web/privado", help="carpeta que no se publica (alertas, CSV)")
+    ap.add_argument("--sin-previos", action="store_true", help="no descargar los datos publicados ayer")
+    args = ap.parse_args()
+
+    ahora = datetime.now(timezone.utc)
+    hoy = ahora.astimezone(MADRID).date()
+    previos = {}
+    dias = 2
+    for clave in VERTICALES:
+        p = None if args.sin_previos else _leer_json(f"{url_vertical(clave)}/data/datos.json")
+        previos[clave] = p or {}
+        ultima = parse_iso(p.get("actualizado")) if p else None
+        # Un día de solape por el retraso con el que la Plataforma publica el feed.
+        dias = max(dias, min(DIAS_PRIMERA_VEZ, (ahora - ultima).days + 2) if ultima else DIAS_PRIMERA_VEZ)
+    todos = list(dict.fromkeys(s for v in VERTICALES.values() for s in v["sectores"]))
+    print(f"Leyendo el feed: {dias} días hacia atrás para {len(VERTICALES)} webs")
+    nuevos = asyncio.run(leer_feed(dias, ahora, sectores=todos))
+
+    for clave, v in VERTICALES.items():
+        cfg = Config(sectores=list(v["sectores"]))
+        r = guardar_vertical(os.path.join(args.salida, clave, "data"), os.path.join(args.privado, clave),
+                             ahora, previos[clave], nuevos, hoy, cfg)
+        print(f"{clave}: abiertas {r['abiertas']} · nuevas hoy {r['nuevas']} · adjudicaciones "
+              f"{r['adjudicaciones']} · empresas en ranking {r['empresas']}")
 
 
 if __name__ == "__main__":

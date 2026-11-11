@@ -186,7 +186,7 @@ def descargar(nombre: str) -> dict:
     raise RuntimeError(f"No se pudo descargar {nombre}: {error}")
 
 
-def main(salida: str = "web/site/data/mapa.json") -> None:
+def main(salida: str = "web/build/mapa.json") -> None:
     try:
         mapa = construir(descargar("autonomous_regions"), descargar("provinces"))
     except Exception as e:  # noqa: BLE001 - sin mapa la web usa las casillas

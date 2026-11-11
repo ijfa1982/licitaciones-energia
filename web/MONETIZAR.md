@@ -38,3 +38,11 @@ Cada alta nueva: añadir al cliente en `SUSCRIPTORES` con los filtros que envió
 ## App móvil
 La web es instalable como app (PWA): Android "Instalar aplicación", iPhone "Añadir a pantalla de inicio".
 Para Google Play se puede empaquetar la misma web con Bubblewrap/TWA (cuenta de desarrollador: 25 $ una vez).
+
+## Webs por sector
+El mismo motor publica una web por sector (configuración en `web/verticales.py`):
+- Energía: https://ijfa1982.github.io/licitaciones-energia/
+- Comunicación, publicidad y eventos: https://ijfa1982.github.io/licitaciones-energia/comunicacion/
+
+Cada una tiene sus productos en Stripe (Pro 19 €, Empresa 49 €, + IVA, 14 días de prueba). En `SUSCRIPTORES`,
+añade `"vertical": "comunicacion"` a los clientes de esa web (sin el campo se entiende energía).

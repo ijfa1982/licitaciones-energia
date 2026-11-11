@@ -121,7 +121,7 @@
       tb.append(tr);
     });
     if (datos.empresasRanking) {
-      $("ganadores-nota").textContent = `Las 10 primeras de ${datos.empresasRanking} empresas que han ganado alguna de las ${datos.adjudicacionesAnalizadas} adjudicaciones de energía de los últimos cuatro meses.`;
+      $("ganadores-nota").textContent = `Las 10 primeras de ${datos.empresasRanking} empresas que han ganado alguna de las ${datos.adjudicacionesAnalizadas} adjudicaciones ${C.tema || "de energía"} de los últimos cuatro meses.`;
     }
   }
 
@@ -135,7 +135,7 @@
       return;
     }
     const n = datos.abiertas.length;
-    $("titular").innerHTML = `Hoy hay <span class="cuenta">${n.toLocaleString("es-ES")}</span> licitaciones de energía abiertas en España`;
+    $("titular").innerHTML = `Hoy hay <span class="cuenta">${n.toLocaleString("es-ES")}</span> licitaciones ${C.tema || "de energía"} abiertas en España`;
     $("actualizado").innerHTML = `Actualizado el <b>${fechaHora.format(new Date(datos.actualizado))}</b>${datos.nuevasHoy ? ` · ${datos.nuevasHoy} nuevas desde ayer` : ""}.`;
     rellenarSelect($("f-sector"), datos.abiertas.flatMap((r) => r.sectores || []));
     rellenarSelect($("f-comunidad"), datos.abiertas.map((r) => r.comunidadAutonoma));

@@ -56,8 +56,6 @@ VERTICALES = {
             'placeholder="Colegio, LED, aerotermia, Ayuntamiento de…"':
                 'placeholder="Campaña, feria, vídeo, gabinete de prensa, Ayuntamiento de…"',
             # Tema propio: arena y cacao, titulares en serif
-            "family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600":
-                "family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Work+Sans:wght@400;500;600",
             '<link rel="stylesheet" href="estilos.css">':
                 '<link rel="stylesheet" href="estilos.css">\n<link rel="stylesheet" href="tema-comunicacion.css">',
             '<meta name="theme-color" content="#22272D">': '<meta name="theme-color" content="#3A2A20">',

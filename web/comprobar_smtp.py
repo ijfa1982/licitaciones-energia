@@ -1,4 +1,5 @@
 """Comprueba las credenciales SMTP sin enviar nada y explica qué falla, sin mostrar los valores."""
+import json
 import os
 import smtplib
 import ssl
@@ -23,4 +24,15 @@ if not ok:
     sys.exit(1)
 with smtplib.SMTP_SSL(os.environ["SMTP_HOST"], int(os.environ["SMTP_PORT"]), context=ssl.create_default_context()) as s:
     s.login(usuario, os.environ["SMTP_PASS"])
-print("Conexión e inicio de sesión en SES correctos.")
+    print("Conexión e inicio de sesión en SES correctos.")
+    # Correo de prueba al primer suscriptor, para comprobar que llega y no cae en spam.
+    subs = json.loads(os.environ.get("SUSCRIPTORES") or "[]")
+    if subs and os.environ.get("REMITENTE"):
+        from email.message import EmailMessage
+        m = EmailMessage()
+        m["From"], m["To"] = os.environ["REMITENTE"], subs[0]["email"]
+        m["Subject"] = "Prueba de envío · Licitaciones Energía"
+        m.set_content("Si lees esto en la bandeja de entrada (no en spam), las alertas diarias funcionan.\n"
+                      "https://ijfa1982.github.io/licitaciones-energia/")
+        s.send_message(m)
+        print("Correo de prueba enviado al primer suscriptor.")

@@ -10,6 +10,7 @@ from __future__ import annotations
 import html
 import json
 import os
+import shutil
 import re
 import sys
 import urllib.parse
@@ -52,10 +53,16 @@ def extraer(datos: dict) -> dict | None:
     return None
 
 
-def descargar_set(fotos: dict, carpeta: str) -> None:
+def descargar_set(fotos: dict, carpeta: str, propias: str = "") -> None:
+    """Descarga las fotos de Commons, salvo las que haya en la carpeta de fotos propias (sin créditos)."""
     os.makedirs(carpeta, exist_ok=True)
     creditos = []
     for hueco, (archivo, alt) in fotos.items():
+        propia = os.path.join(propias, f"{hueco}.jpg") if propias else ""
+        if propia and os.path.exists(propia):
+            shutil.copy(propia, os.path.join(carpeta, f"{hueco}.jpg"))
+            print(f"{hueco}: foto propia")
+            continue
         try:
             m = metadatos(archivo)
             if not m or not m["url"]:
@@ -75,7 +82,7 @@ def main(base: str = "web/build") -> None:
     from web.verticales import VERTICALES
     for clave, v in VERTICALES.items():
         print(f"Fotos de {clave}:")
-        descargar_set(v["fotos"], os.path.join(base, clave, "fotos"))
+        descargar_set(v["fotos"], os.path.join(base, clave, "fotos"), os.path.join("web", "fotos_propias", clave))
 
 
 if __name__ == "__main__":

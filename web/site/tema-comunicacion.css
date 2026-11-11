@@ -1,0 +1,53 @@
+/* Tema de la web de comunicación y eventos: arena, papel y cacao, con caramelo como acento.
+   Se carga después de estilos.css y solo cambia colores, tipografía y algún detalle de forma. */
+:root {
+  --hormigon: #EFE7DA;      /* arena: fondo */
+  --chapa: #FBF7F1;         /* papel: tarjetas */
+  --grafito: #3A2A20;       /* cacao: barras y botones oscuros */
+  --grafito-2: #4E3A2D;
+  --acero: #7A6656;         /* texto secundario */
+  --senal: #C8873E;         /* caramelo: acento */
+  --senal-oscura: #A86C2B;
+  --oxido: #9E3D22;
+  --junta: #DDD0BE;
+  --tinta: #2E221A;
+  --display: "Fraunces", Georgia, serif;
+  --nivel-1: #E3CFB4; --nivel-2: #C9A57C; --nivel-3: #96714F; --nivel-4: #5A4130;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --hormigon: #1E1712; --chapa: #2A2019; --tinta: #F1E8DC; --acero: #BFAE9C; --junta: #43352A;
+    --grafito: #140F0B; --grafito-2: #241B15; --oxido: #E08A64;
+  }
+}
+body { font-family: "Work Sans", system-ui, sans-serif; }
+
+/* Titulares en serif, en minúscula y sin mayúsculas forzadas */
+.portada h1, h2, .sector-nombre, .plan h3, .legal h1, .detalle h3 {
+  text-transform: none; letter-spacing: -.01em; font-weight: 600;
+}
+.portada h1 { font-size: clamp(2.4rem, 5.6vw, 4.6rem); line-height: 1.02; max-width: 17ch; }
+.portada::after { background: linear-gradient(90deg, rgba(46,30,20,.94) 0%, rgba(46,30,20,.8) 45%, rgba(46,30,20,.35) 100%); }
+.portada-foto { filter: saturate(.85) sepia(.18); }
+.sector img { filter: saturate(.85) sepia(.15); }
+.sector:hover img { filter: none; }
+.sector::after { background: linear-gradient(0deg, rgba(46,30,20,.86), rgba(46,30,20,.1) 70%); }
+
+/* En lugar de la banda de peligro, una línea fina de color caramelo */
+.franja { height: 4px; background: var(--senal); }
+
+/* Formas más suaves */
+.boton, .licitacion, .plan, .tesela, .sector, .filtros, .aviso-alerta, .detalle, table, .campo input, .campo select, .volver { border-radius: 10px; }
+.boton, .volver, .importe, .precio, .tesela-n { font-family: var(--display); }
+.boton-primario { color: #fff; }
+.boton-primario:hover { color: #fff; }
+.licitacion { border-left-width: 4px; }
+.plan-destacado { box-shadow: inset 0 0 0 2px var(--senal); }
+th { font-family: "Work Sans", sans-serif; font-weight: 600; }
+
+/* Mapa y casillas en la gama arena-cacao */
+.zona[data-nivel="1"], .tesela[data-nivel="1"], .leyenda i[data-nivel="1"], .ciudad circle[data-nivel="1"] { fill: var(--nivel-1); background: var(--nivel-1); }
+.zona[data-nivel="2"], .tesela[data-nivel="2"], .leyenda i[data-nivel="2"], .ciudad circle[data-nivel="2"] { fill: var(--nivel-2); background: var(--nivel-2); }
+.zona[data-nivel="3"], .tesela[data-nivel="3"], .leyenda i[data-nivel="3"], .ciudad circle[data-nivel="3"] { fill: var(--nivel-3); background: var(--nivel-3); }
+.zona[data-nivel="4"], .tesela[data-nivel="4"], .leyenda i[data-nivel="4"], .ciudad circle[data-nivel="4"] { fill: var(--nivel-4); background: var(--nivel-4); }
+.zona:hover, .zona:focus-visible, .zona[aria-pressed="true"], .tesela[aria-pressed="true"] { fill: var(--senal); background: var(--senal); }

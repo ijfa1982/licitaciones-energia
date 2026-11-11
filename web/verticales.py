@@ -53,6 +53,14 @@ VERTICALES = {
             "Fotovoltaica, alumbrado, climatización, puntos de recarga, instalaciones eléctricas y suministro.":
                 "Publicidad y marketing, comunicación y relaciones públicas, eventos, ferias y congresos, diseño y producción audiovisual.",
             "<span>Licitaciones Energía</span>": "<span>Licitaciones Comunicación</span>",
+            'placeholder="Colegio, LED, aerotermia, Ayuntamiento de…"':
+                'placeholder="Campaña, feria, vídeo, gabinete de prensa, Ayuntamiento de…"',
+            # Tema propio: arena y cacao, titulares en serif
+            "family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600":
+                "family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Work+Sans:wght@400;500;600",
+            '<link rel="stylesheet" href="estilos.css">':
+                '<link rel="stylesheet" href="estilos.css">\n<link rel="stylesheet" href="tema-comunicacion.css">',
+            '<meta name="theme-color" content="#22272D">': '<meta name="theme-color" content="#3A2A20">',
             '<summary>¿Qué cuenta como licitación de energía?</summary><p>Fotovoltaica y autoconsumo, eficiencia energética, alumbrado público, climatización y bombas de calor, puntos de recarga, instalaciones eléctricas, suministro de electricidad y gas, almacenamiento, renovables y consultoría energética. Se detectan por los códigos CPV del contrato y por palabras del título, y se descartan las de iluminación de fiestas y eventos.</p>':
                 '<summary>¿Qué licitaciones incluye?</summary><p>Campañas de publicidad y marketing, planes de medios, relaciones públicas y gabinetes de prensa, comunicación institucional y redes sociales, organización de eventos, jornadas, ferias y congresos, diseño gráfico e imagen corporativa, y producción de vídeo. Se detectan por los códigos CPV del contrato y por palabras del título.</p>',
             "Sectores (fotovoltaica, alumbrado, climatización, recarga, instalaciones eléctricas, suministro, eficiencia, renovables, consultoría):":

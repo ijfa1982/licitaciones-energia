@@ -24,6 +24,7 @@ jobs:
     timeout-minutes: 90
     env:
       HAY_SUSCRIPTORES: ${{ secrets.SUSCRIPTORES != '' }}
+      HAY_TELEGRAM: ${{ secrets.TELEGRAM_TOKEN != '' }}
     environment:
       name: github-pages
       url: ${{ steps.despliegue.outputs.page_url }}
@@ -53,6 +54,13 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           REMITENTE: ${{ secrets.REMITENTE }}
         run: python -m web.enviar_alertas --privado web/privado
+      - name: Publicar las nuevas en el canal de Telegram
+        if: ${{ env.HAY_TELEGRAM == 'true' }}
+        continue-on-error: true   # un fallo de Telegram no debe impedir actualizar la web
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CANAL: "@licitacionesenergia"
+        run: python -m web.publicar_telegram --privado web/privado
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -36,6 +36,23 @@ def _fecha(v) -> str:
     return f"{v[8:10]}/{v[5:7]}/{v[0:4]}" if len(v) >= 10 and v[4] == "-" and v[7] == "-" else (v or "sin fecha publicada")
 
 
+TEMAS = [  # (palabras del título, hashtags)
+    (("fotovolt", "solar", "autoconsumo"), "#energiasolar #placasfotovoltaicas"),
+    (("alumbrado", "iluminaci", "luminaria", "led"), "#alumbradopublico"),
+    (("climatiz", "calefacci", "aerotermia", "bomba de calor", "hvac"), "#climatizacion"),
+    (("recarga", "vehículo eléctrico", "vehiculo electrico", "puntos de carga"), "#movilidadelectrica"),
+    (("eficiencia", "ahorro energ", "auditor"), "#eficienciaenergetica"),
+    (("eléctric", "electric", "baja tensión", "media tensión", "subestaci"), "#electricidad"),
+]
+
+
+def hashtags(r: dict) -> str:
+    t = (r.get("titulo") or "").lower()
+    extra = [h for claves, h in TEMAS if any(c in t for c in claves)]
+    base = "#licitaciones #contratacionpublica"
+    return " ".join([base] + extra[:2] + ([] if extra else ["#energia"]))
+
+
 def mensaje(r: dict) -> str:
     e = html.escape
     lineas = [f"⚡ <b>{e(r.get('titulo') or 'Licitación')}</b>"]
@@ -46,12 +63,13 @@ def mensaje(r: dict) -> str:
     lineas.append(f"⏳ Plazo hasta {e(_fecha(r.get('fechaLimite')))}")
     if r.get("urlDetalle"):
         lineas.append(f'🔗 <a href="{e(r["urlDetalle"])}">Ver la licitación</a>')
+    lineas.append(f"\n{hashtags(r)}")
     return "\n".join(lineas)
 
 
 def resumen(restantes: int) -> str:
     return (f"➕ Hoy hay {restantes} licitaciones nuevas más. Consúltalas y filtra por sector y comunidad en "
-            f'<a href="{URL_WEB}">Licitaciones de Energía</a> · Arcas Lab')
+            f'<a href="{URL_WEB}">Licitaciones de Energía</a> · Arcas Lab\n\n#licitaciones #energia #electricidad')
 
 
 def enviar(token: str, canal: str, texto: str) -> None:
